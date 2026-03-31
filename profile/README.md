@@ -17,26 +17,35 @@ explore and innovate! Happy coding!
 Below is a list of packages that are under the ArtisanPack UI umbrella. You can learn more about each package here as
 well as clicking through to their respective repositories.
 
-| Package                | Learn More                            | Repository Link                                                                                                    | Version | Status         |
-|------------------------|---------------------------------------|--------------------------------------------------------------------------------------------------------------------|---------|----------------|
-| Accessibility          | [Learn More](#accessibility)          | [View Repository](https://github.com/ArtisanPack-UI/accessibility)        | 2.1.1   | 🟢 Live        |
-| Analytics              | [Learn More](#analytics)              | [View Repository](https://github.com/ArtisanPack-UI/analytics)            | 1.0.0   | 🟢 Live        |
-| CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)        | 1.0.1   | 🟢 Live        |
-| Code Style             | [Learn More](#code-style)             | [View Repository](https://github.com/ArtisanPack-UI/code-style)           | 1.1.0   | 🟢 Live        |
-| Code Style Pint        | [Learn More](#code-style-pint)        | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)      | 1.1.0   | 🟢 Live        |
-| Core                   | [Learn More](#core)                   | [View Repository](https://github.com/ArtisanPack-UI/core)                 | 1.1.0   | 🟢 Live        |
-| Forms                  | [Learn More](#forms)                  | [View Repository](https://github.com/ArtisanPack-UI/forms)                | 1.0.0   | 🟢 Live        |
-| Hooks                  | [Learn More](#hooks)                  | [View Repository](https://github.com/ArtisanPack-UI/hooks)                | 1.2.0   | 🟢 Live        |
-| Icons                  | [Learn More](#icons)                  | [View Repository](https://github.com/ArtisanPack-UI/icons)                | 2.1.0   | 🟢 Live        |
-| Livewire Drag and Drop | [Learn More](#livewire-drag-and-drop) | [View Repository](https://github.com/ArtisanPack-UI/livewire-drag-and-drop)              | 2.0.0   | 🟢 Live        |
-| Livewire Starter Kit   | [Learn More](#livewire-starter-kit)   | [View Repository](https://github.com/ArtisanPack-UI/livewire-starter-kit) | 1.0.2   | 🟢 Live        |
-| Livewire UI Components | [Learn More](#livewire-ui-components) | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components)              | 2.0.0   | 🟢 Live        |
-| Media Library          | [Learn More](#media-library)          | [View Repository](https://github.com/ArtisanPack-UI/media-library)        | 1.1.0   | 🟢 Live        |
-| Performance            | [Learn More](#performance)            | [View Repository](https://github.com/ArtisanPack-UI/performance)          | Dev     | 🟡 In Progress |
-| Privacy                | [Learn More](#privacy)                | [View Repository](https://github.com/ArtisanPack-UI/privacy)              | Dev     | 🟡 In Progress |
-| Security               | [Learn More](#security)               | [View Repository](https://github.com/ArtisanPack-UI/security)             | 1.0.3   | 🟢 Live        |
-| SEO                    | [Learn More](#seo)                    | [View Repository](https://github.com/ArtisanPack-UI/seo)                  | 1.0.0   | 🟢 Live        |
-| Visual Editor          | [Learn More](#visual-editor)          | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)        | Dev     | 🟡 In Progress |
+| Package                | Learn More                            | Repository Link                                                                          | Version | Status         |
+|------------------------|---------------------------------------|------------------------------------------------------------------------------------------|---------|----------------|
+| Accessibility          | [Learn More](#accessibility)          | [View Repository](https://github.com/ArtisanPack-UI/accessibility)                      | 2.1.1   | 🟢 Live        |
+| Analytics              | [Learn More](#analytics)              | [View Repository](https://github.com/ArtisanPack-UI/analytics)                          | 1.0.0   | 🟢 Live        |
+| CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)                      | 1.0.1   | 🟢 Live        |
+| Code Style             | [Learn More](#code-style)             | [View Repository](https://github.com/ArtisanPack-UI/code-style)                         | 1.1.0   | 🟢 Live        |
+| Code Style Pint        | [Learn More](#code-style-pint)        | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)                    | 1.1.0   | 🟢 Live        |
+| Compliance             | [Learn More](#compliance)             | [View Repository](https://github.com/ArtisanPack-UI/compliance)                         | Dev     | 🟡 In Progress |
+| Core                   | [Learn More](#core)                   | [View Repository](https://github.com/ArtisanPack-UI/core)                               | 1.1.0   | 🟢 Live        |
+| Forms                  | [Learn More](#forms)                  | [View Repository](https://github.com/ArtisanPack-UI/forms)                              | 1.0.0   | 🟢 Live        |
+| Hooks                  | [Learn More](#hooks)                  | [View Repository](https://github.com/ArtisanPack-UI/hooks)                              | 1.2.0   | 🟢 Live        |
+| Icons                  | [Learn More](#icons)                  | [View Repository](https://github.com/ArtisanPack-UI/icons)                              | 2.1.0   | 🟢 Live        |
+| Livewire Drag and Drop | [Learn More](#livewire-drag-and-drop) | [View Repository](https://github.com/ArtisanPack-UI/livewire-drag-and-drop)             | 2.0.1   | 🟢 Live        |
+| Livewire Starter Kit   | [Learn More](#livewire-starter-kit)   | [View Repository](https://github.com/ArtisanPack-UI/livewire-starter-kit)               | 1.0.2   | 🟢 Live        |
+| Livewire UI Components | [Learn More](#livewire-ui-components) | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components)             | 2.0.2   | 🟢 Live        |
+| Media Library          | [Learn More](#media-library)          | [View Repository](https://github.com/ArtisanPack-UI/media-library)                      | 1.1.0   | 🟢 Live        |
+| Performance            | [Learn More](#performance)            | [View Repository](https://github.com/ArtisanPack-UI/performance)                        | Dev     | 🟡 In Progress |
+| Privacy                | [Learn More](#privacy)                | [View Repository](https://github.com/ArtisanPack-UI/privacy)                            | Dev     | 🟡 In Progress |
+| RBAC                   | [Learn More](#rbac)                   | [View Repository](https://github.com/ArtisanPack-UI/rbac)                               | Dev     | 🟡 In Progress |
+| React                  | [Learn More](#react)                  | [View Repository](https://github.com/ArtisanPack-UI/react)                              | 1.0.0   | 🟢 Live        |
+| Secure Uploads         | [Learn More](#secure-uploads)         | [View Repository](https://github.com/ArtisanPack-UI/secure-uploads)                     | Dev     | 🟡 In Progress |
+| Security               | [Learn More](#security)               | [View Repository](https://github.com/ArtisanPack-UI/security)                           | 1.0.3   | 🟢 Live        |
+| Security Advanced Auth | [Learn More](#security-advanced-auth) | [View Repository](https://github.com/ArtisanPack-UI/security-advanced-auth)             | Dev     | 🟡 In Progress |
+| Security Analytics     | [Learn More](#security-analytics)     | [View Repository](https://github.com/ArtisanPack-UI/security-analytics)                 | Dev     | 🟡 In Progress |
+| Security Auth          | [Learn More](#security-auth)          | [View Repository](https://github.com/ArtisanPack-UI/security-auth)                      | Dev     | 🟡 In Progress |
+| Security Full          | [Learn More](#security-full)          | [View Repository](https://github.com/ArtisanPack-UI/security-full)                      | Dev     | 🟡 In Progress |
+| SEO                    | [Learn More](#seo)                    | [View Repository](https://github.com/ArtisanPack-UI/seo)                                | 1.0.0   | 🟢 Live        |
+| Visual Editor          | [Learn More](#visual-editor)          | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)                      | Dev     | 🟡 In Progress |
+| Vue                    | [Learn More](#vue)                    | [View Repository](https://github.com/ArtisanPack-UI/vue)                                | Dev     | 🟡 In Progress |
 
 ## Accessibility
 
@@ -57,6 +66,10 @@ Enforce a clean and consistent code style across your entire project automatical
 ## Code Style Pint
 
 A Laravel Pint preset that implements the coding standards defined in the artisanpack-ui/code-style PHPCS package. This package provides a pre-configured pint.json file to enforce consistent code formatting with Laravel Pint, including rules for array syntax, spacing, brace positioning, import ordering, and strict type declarations. Perfect for teams looking to automate code formatting with Pint while maintaining compatibility with the broader ArtisanPack UI code style standards.
+
+## Compliance
+
+Regulatory compliance for Laravel applications covering GDPR, CCPA, LGPD, and more. This package provides consent management, data portability, right to erasure, Data Protection Impact Assessments (DPIAs), and compliance reporting to help developers build applications that meet global privacy regulations.
 
 ## Core
 
@@ -98,9 +111,37 @@ Optimize your Laravel application's speed and efficiency with a toolkit designed
 
 Build privacy-conscious applications with tools designed for compliance and user trust. This package provides privacy management features to help developers implement GDPR-compliant data handling, consent management, and user data rights within their Laravel applications.
 
+## RBAC
+
+Role-based access control for Laravel applications. This package provides roles with hierarchy support, granular permissions, Blade directives, middleware, and Gate integration to help developers implement robust authorization systems with minimal effort.
+
+## React
+
+A monorepo for the ArtisanPack UI React ecosystem, providing over 80 TypeScript components styled with DaisyUI and Tailwind CSS, shared design tokens, and Inertia.js adapters for seamless Laravel integration. Includes the @artisanpack-ui/react, @artisanpack-ui/tokens, and @artisanpack-ui/react-laravel packages.
+
+## Secure Uploads
+
+Secure file upload handling for Laravel applications. This package provides file type validation, malware scanning via ClamAV and VirusTotal, secure storage, signed URLs, and quarantine management to protect your application from malicious file uploads.
+
 ## Security
 
 A straightforward, powerful toolkit for securing your application. It provides essential functions for escaping and sanitizing data, making it simple to implement robust security measures throughout your project. This package focuses on application security by offering data escaping and sanitization utilities designed to help developers implement protection mechanisms across their codebase.
+
+## Security Advanced Auth
+
+Enterprise authentication for Laravel applications. This package provides WebAuthn/FIDO2 passwordless authentication, Single Sign-On via SAML, OIDC, and LDAP, social login, biometric authentication, and device fingerprinting for organizations that need advanced authentication capabilities.
+
+## Security Analytics
+
+Security monitoring and analytics for Laravel applications. This package provides event logging, anomaly detection, threat intelligence, SIEM export, incident response workflows, and reporting dashboards to help developers maintain visibility into their application's security posture.
+
+## Security Auth
+
+Authentication security for Laravel applications. This package provides two-factor authentication via email and TOTP, password complexity and breach checking, account lockout policies, and session management to help developers secure user authentication flows.
+
+## Security Full
+
+A meta-package that installs the complete ArtisanPack UI security suite. This package bundles all security, authentication, RBAC, uploads, analytics, and compliance packages into a single convenient installation for teams that want comprehensive security coverage.
 
 ## SEO
 
@@ -109,6 +150,10 @@ A comprehensive SEO management package for Laravel applications built on Livewir
 ## Visual Editor
 
 Empower your users with a modern, intuitive visual editor. This package provides a complete block-based editing experience, allowing for the creation of dynamic, beautiful content with ease and precision. Visual editors are becoming a crucial part of any content management system, enabling website owners to see how the page looks as they are creating it.
+
+## Vue
+
+A monorepo for the ArtisanPack UI Vue ecosystem, providing over 80 TypeScript components with full parity to the React library, styled with DaisyUI and Tailwind CSS, plus Inertia.js adapters for seamless Laravel integration. Includes the @artisanpack-ui/vue and @artisanpack-ui/vue-laravel packages.
 
 ## Contributing
 
