@@ -1,0 +1,6 @@
+{
+  "name": "Auto-assign Awaiting Review milestone",
+  "description": "Automatically assigns the Awaiting Review milestone to new issues that don't already have a milestone.",
+  "iconName": "milestone",
+  "categories": ["Automation"]
+}
