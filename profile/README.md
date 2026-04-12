@@ -20,19 +20,19 @@ well as clicking through to their respective repositories.
 | Package                | Learn More                            | Repository Link                                                                          | Version | Status         |
 |------------------------|---------------------------------------|------------------------------------------------------------------------------------------|---------|----------------|
 | Accessibility          | [Learn More](#accessibility)          | [View Repository](https://github.com/ArtisanPack-UI/accessibility)                      | 2.1.1   | 🟢 Live        |
-| Analytics              | [Learn More](#analytics)              | [View Repository](https://github.com/ArtisanPack-UI/analytics)                          | 1.0.0   | 🟢 Live        |
-| CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)                      | 1.0.1   | 🟢 Live        |
+| Analytics              | [Learn More](#analytics)              | [View Repository](https://github.com/ArtisanPack-UI/analytics)                          | 1.1.0   | 🟢 Live        |
+| CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)                      | 1.1.0   | 🟢 Live        |
 | Code Style             | [Learn More](#code-style)             | [View Repository](https://github.com/ArtisanPack-UI/code-style)                         | 1.1.0   | 🟢 Live        |
 | Code Style Pint        | [Learn More](#code-style-pint)        | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)                    | 1.1.0   | 🟢 Live        |
 | Compliance             | [Learn More](#compliance)             | [View Repository](https://github.com/ArtisanPack-UI/compliance)                         | Dev     | 🟡 In Progress |
 | Core                   | [Learn More](#core)                   | [View Repository](https://github.com/ArtisanPack-UI/core)                               | 1.1.0   | 🟢 Live        |
-| Forms                  | [Learn More](#forms)                  | [View Repository](https://github.com/ArtisanPack-UI/forms)                              | 1.0.0   | 🟢 Live        |
+| Forms                  | [Learn More](#forms)                  | [View Repository](https://github.com/ArtisanPack-UI/forms)                              | 1.1.0   | 🟢 Live        |
 | Hooks                  | [Learn More](#hooks)                  | [View Repository](https://github.com/ArtisanPack-UI/hooks)                              | 1.2.0   | 🟢 Live        |
 | Icons                  | [Learn More](#icons)                  | [View Repository](https://github.com/ArtisanPack-UI/icons)                              | 2.1.0   | 🟢 Live        |
 | Livewire Drag and Drop | [Learn More](#livewire-drag-and-drop) | [View Repository](https://github.com/ArtisanPack-UI/livewire-drag-and-drop)             | 2.0.1   | 🟢 Live        |
 | Livewire Starter Kit   | [Learn More](#livewire-starter-kit)   | [View Repository](https://github.com/ArtisanPack-UI/livewire-starter-kit)               | 1.0.2   | 🟢 Live        |
 | Livewire UI Components | [Learn More](#livewire-ui-components) | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components)             | 2.0.2   | 🟢 Live        |
-| Media Library          | [Learn More](#media-library)          | [View Repository](https://github.com/ArtisanPack-UI/media-library)                      | 1.1.0   | 🟢 Live        |
+| Media Library          | [Learn More](#media-library)          | [View Repository](https://github.com/ArtisanPack-UI/media-library)                      | 1.2.0   | 🟢 Live        |
 | Performance            | [Learn More](#performance)            | [View Repository](https://github.com/ArtisanPack-UI/performance)                        | Dev     | 🟡 In Progress |
 | Privacy                | [Learn More](#privacy)                | [View Repository](https://github.com/ArtisanPack-UI/privacy)                            | Dev     | 🟡 In Progress |
 | RBAC                   | [Learn More](#rbac)                   | [View Repository](https://github.com/ArtisanPack-UI/rbac)                               | Dev     | 🟡 In Progress |
@@ -43,9 +43,9 @@ well as clicking through to their respective repositories.
 | Security Analytics     | [Learn More](#security-analytics)     | [View Repository](https://github.com/ArtisanPack-UI/security-analytics)                 | Dev     | 🟡 In Progress |
 | Security Auth          | [Learn More](#security-auth)          | [View Repository](https://github.com/ArtisanPack-UI/security-auth)                      | Dev     | 🟡 In Progress |
 | Security Full          | [Learn More](#security-full)          | [View Repository](https://github.com/ArtisanPack-UI/security-full)                      | Dev     | 🟡 In Progress |
-| SEO                    | [Learn More](#seo)                    | [View Repository](https://github.com/ArtisanPack-UI/seo)                                | 1.0.0   | 🟢 Live        |
+| SEO                    | [Learn More](#seo)                    | [View Repository](https://github.com/ArtisanPack-UI/seo)                                | 1.1.0   | 🟢 Live        |
 | Visual Editor          | [Learn More](#visual-editor)          | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)                      | Dev     | 🟡 In Progress |
-| Vue                    | [Learn More](#vue)                    | [View Repository](https://github.com/ArtisanPack-UI/vue)                                | Dev     | 🟡 In Progress |
+| Vue                    | [Learn More](#vue)                    | [View Repository](https://github.com/ArtisanPack-UI/vue)                                | 1.0.0   | 🟢 Live        |
 
 ## Accessibility
 
