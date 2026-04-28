@@ -37,6 +37,7 @@ well as clicking through to their respective repositories.
 | Privacy                | [Learn More](#privacy)                | [View Repository](https://github.com/ArtisanPack-UI/privacy)                            | Dev     | 🟡 In Progress |
 | RBAC                   | [Learn More](#rbac)                   | [View Repository](https://github.com/ArtisanPack-UI/rbac)                               | Dev     | 🟡 In Progress |
 | React                  | [Learn More](#react)                  | [View Repository](https://github.com/ArtisanPack-UI/react)                              | 1.0.0   | 🟢 Live        |
+| React Starter Kit      | [Learn More](#react-starter-kit)      | [View Repository](https://github.com/ArtisanPack-UI/react-starter-kit)                  | 1.0.0   | 🟢 Live        |
 | Secure Uploads         | [Learn More](#secure-uploads)         | [View Repository](https://github.com/ArtisanPack-UI/secure-uploads)                     | Dev     | 🟡 In Progress |
 | Security               | [Learn More](#security)               | [View Repository](https://github.com/ArtisanPack-UI/security)                           | 1.0.3   | 🟢 Live        |
 | Security Advanced Auth | [Learn More](#security-advanced-auth) | [View Repository](https://github.com/ArtisanPack-UI/security-advanced-auth)             | Dev     | 🟡 In Progress |
@@ -46,6 +47,7 @@ well as clicking through to their respective repositories.
 | SEO                    | [Learn More](#seo)                    | [View Repository](https://github.com/ArtisanPack-UI/seo)                                | 1.1.0   | 🟢 Live        |
 | Visual Editor          | [Learn More](#visual-editor)          | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)                      | Dev     | 🟡 In Progress |
 | Vue                    | [Learn More](#vue)                    | [View Repository](https://github.com/ArtisanPack-UI/vue)                                | 1.0.0   | 🟢 Live        |
+| Vue Starter Kit        | [Learn More](#vue-starter-kit)        | [View Repository](https://github.com/ArtisanPack-UI/vue-starter-kit)                    | 1.0.0   | 🟢 Live        |
 
 ## Accessibility
 
@@ -119,6 +121,10 @@ Role-based access control for Laravel applications. This package provides roles 
 
 A monorepo for the ArtisanPack UI React ecosystem, providing over 80 TypeScript components styled with DaisyUI and Tailwind CSS, shared design tokens, and Inertia.js adapters for seamless Laravel integration. Includes the @artisanpack-ui/react, @artisanpack-ui/tokens, and @artisanpack-ui/react-laravel packages.
 
+## React Starter Kit
+
+The fastest way to start a Laravel + React + Inertia.js project on the ArtisanPack UI stack. Ships with a complete auth flow (login, register, password reset, email verification, password confirmation, account deletion), profile/password/appearance settings, shared layouts (sidebar + mobile navbar + toast region), Inertia SSR, Laravel Wayfinder typed routes, and an interactive optional-packages prompt during install for adding the CMS framework, hooks, media library, and more.
+
 ## Secure Uploads
 
 Secure file upload handling for Laravel applications. This package provides file type validation, malware scanning via ClamAV and VirusTotal, secure storage, signed URLs, and quarantine management to protect your application from malicious file uploads.
@@ -154,6 +160,10 @@ Empower your users with a modern, intuitive visual editor. This package provides
 ## Vue
 
 A monorepo for the ArtisanPack UI Vue ecosystem, providing over 80 TypeScript components with full parity to the React library, styled with DaisyUI and Tailwind CSS, plus Inertia.js adapters for seamless Laravel integration. Includes the @artisanpack-ui/vue and @artisanpack-ui/vue-laravel packages.
+
+## Vue Starter Kit
+
+The fastest way to start a Laravel + Vue + Inertia.js project on the ArtisanPack UI stack. Mirrors the React Starter Kit feature-for-feature: complete auth flow, profile/password/appearance settings, shared layouts (sidebar + mobile navbar + toast region), Inertia SSR, Laravel Wayfinder typed routes, and an interactive optional-packages prompt during install. Backend controllers, routes, and tests are identical between the two kits — pick the framework you want to use on the frontend.
 
 ## Contributing
 
