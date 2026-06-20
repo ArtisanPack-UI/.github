@@ -34,7 +34,7 @@ well as clicking through to their respective repositories.
 | Livewire UI Components | [Learn More](#livewire-ui-components) | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components) | 2.0.5   | 🟢 Live        |
 | Media Library          | [Learn More](#media-library)          | [View Repository](https://github.com/ArtisanPack-UI/media-library)          | 1.2.2   | 🟢 Live        |
 | Performance            | [Learn More](#performance)            | [View Repository](https://github.com/ArtisanPack-UI/performance)            | Dev     | 🟡 In Progress |
-| Privacy                | [Learn More](#privacy)                | [View Repository](https://github.com/ArtisanPack-UI/privacy)                | Dev     | 🟡 In Progress |
+| Privacy                | [Learn More](#privacy)                | [View Repository](https://github.com/ArtisanPack-UI/privacy)                | 1.0.0   | 🟢 Live        |
 | RBAC                   | [Learn More](#rbac)                   | [View Repository](https://github.com/ArtisanPack-UI/rbac)                   | 1.0.1   | 🟢 Live        |
 | React                  | [Learn More](#react)                  | [View Repository](https://github.com/ArtisanPack-UI/react)                  | 1.0.1   | 🟢 Live        |
 | React Starter Kit      | [Learn More](#react-starter-kit)      | [View Repository](https://github.com/ArtisanPack-UI/react-starter-kit)      | 1.0.1   | 🟢 Live        |
@@ -45,7 +45,7 @@ well as clicking through to their respective repositories.
 | Security Auth          | [Learn More](#security-auth)          | [View Repository](https://github.com/ArtisanPack-UI/security-auth)          | 1.0.1   | 🟢 Live        |
 | Security Full          | [Learn More](#security-full)          | [View Repository](https://github.com/ArtisanPack-UI/security-full)          | 1.0.0   | 🟢 Live        |
 | SEO                    | [Learn More](#seo)                    | [View Repository](https://github.com/ArtisanPack-UI/seo)                    | 1.1.1   | 🟢 Live        |
-| Visual Editor          | [Learn More](#visual-editor)          | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)          | 1.1.1   | 🟢 Live        |
+| Visual Editor          | [Learn More](#visual-editor)          | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)          | 1.2.0   | 🟢 Live        |
 | Vue                    | [Learn More](#vue)                    | [View Repository](https://github.com/ArtisanPack-UI/vue)                    | 1.0.0   | 🟢 Live        |
 | Vue Starter Kit        | [Learn More](#vue-starter-kit)        | [View Repository](https://github.com/ArtisanPack-UI/vue-starter-kit)        | 1.0.1   | 🟢 Live        |
 
