@@ -20,20 +20,25 @@ well as clicking through to their respective repositories.
 | Package                | Learn More                            | Repository Link                                                             | Version | Status         |
 |------------------------|---------------------------------------|-----------------------------------------------------------------------------|---------|----------------|
 | Accessibility          | [Learn More](#accessibility)          | [View Repository](https://github.com/ArtisanPack-UI/accessibility)          | 2.1.2   | 🟢 Live        |
+| AI                     | [Learn More](#ai)                     | [View Repository](https://github.com/ArtisanPack-UI/ai)                     | Dev     | 🟡 In Progress |
 | Analytics              | [Learn More](#analytics)              | [View Repository](https://github.com/ArtisanPack-UI/analytics)              | 1.2.1   | 🟢 Live        |
+| Analytics Google       | [Learn More](#analytics-google)       | [View Repository](https://github.com/ArtisanPack-UI/analytics-google)       | Dev     | 🟡 In Progress |
 | CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)          | 2.2.3   | 🟢 Live        |
 | Code Style             | [Learn More](#code-style)             | [View Repository](https://github.com/ArtisanPack-UI/code-style)             | 1.1.1   | 🟢 Live        |
 | Code Style Pint        | [Learn More](#code-style-pint)        | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)        | 1.1.1   | 🟢 Live        |
 | Compliance             | [Learn More](#compliance)             | [View Repository](https://github.com/ArtisanPack-UI/compliance)             | 1.0.1   | 🟢 Live        |
 | Core                   | [Learn More](#core)                   | [View Repository](https://github.com/ArtisanPack-UI/core)                   | 1.2.0   | 🟢 Live        |
 | Forms                  | [Learn More](#forms)                  | [View Repository](https://github.com/ArtisanPack-UI/forms)                  | 1.1.3   | 🟢 Live        |
+| Google                 | [Learn More](#google)                 | [View Repository](https://github.com/ArtisanPack-UI/google)                 | Dev     | 🟡 In Progress |
+| Google Search Console  | [Learn More](#google-search-console)  | [View Repository](https://github.com/ArtisanPack-UI/google-search-console)  | Dev     | 🟡 In Progress |
+| Google Tag Manager     | [Learn More](#google-tag-manager)     | [View Repository](https://github.com/ArtisanPack-UI/google-tag-manager)     | Dev     | 🟡 In Progress |
 | Hooks                  | [Learn More](#hooks)                  | [View Repository](https://github.com/ArtisanPack-UI/hooks)                  | 1.2.1   | 🟢 Live        |
 | Icons                  | [Learn More](#icons)                  | [View Repository](https://github.com/ArtisanPack-UI/icons)                  | 2.1.2   | 🟢 Live        |
 | Livewire Drag and Drop | [Learn More](#livewire-drag-and-drop) | [View Repository](https://github.com/ArtisanPack-UI/livewire-drag-and-drop) | 2.0.1   | 🟢 Live        |
 | Livewire Starter Kit   | [Learn More](#livewire-starter-kit)   | [View Repository](https://github.com/ArtisanPack-UI/livewire-starter-kit)   | 1.0.3   | 🟢 Live        |
 | Livewire UI Components | [Learn More](#livewire-ui-components) | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components) | 2.0.5   | 🟢 Live        |
 | Media Library          | [Learn More](#media-library)          | [View Repository](https://github.com/ArtisanPack-UI/media-library)          | 1.2.2   | 🟢 Live        |
-| Performance            | [Learn More](#performance)            | [View Repository](https://github.com/ArtisanPack-UI/performance)            | Dev     | 🟡 In Progress |
+| Performance            | [Learn More](#performance)            | [View Repository](https://github.com/ArtisanPack-UI/performance)            | 1.0.0   | 🟢 Live        |
 | Privacy                | [Learn More](#privacy)                | [View Repository](https://github.com/ArtisanPack-UI/privacy)                | 1.0.0   | 🟢 Live        |
 | RBAC                   | [Learn More](#rbac)                   | [View Repository](https://github.com/ArtisanPack-UI/rbac)                   | 1.0.1   | 🟢 Live        |
 | React                  | [Learn More](#react)                  | [View Repository](https://github.com/ArtisanPack-UI/react)                  | 1.0.1   | 🟢 Live        |
@@ -53,9 +58,17 @@ well as clicking through to their respective repositories.
 
 Build inclusive and compliant web applications with essential tools that empower you to create experiences usable by everyone, seamlessly integrated into your Laravel projects. This package provides accessibility tools and features designed to help developers create web applications that are inclusive and compliant with accessibility standards.
 
+## AI
+
+The shared AI foundation for ArtisanPack UI packages. Built on `laravel/ai`, it provides BYOK (bring-your-own-key) credential resolution, an agent base class, and a feature registry that powers AI-enabled functionality across the ecosystem.
+
 ## Analytics
 
 A privacy-first analytics package for Laravel applications. Built on Livewire 3, it provides local database storage for complete data ownership, GDPR-compliant consent management, real-time dashboards, multi-tenant support, and optional integration with Google Analytics 4 and Plausible. This package emphasizes data ownership and privacy-first design while offering extensibility through custom providers, site resolvers, and filter hooks.
+
+## Analytics Google
+
+A Google Analytics (GA4) provider for the ArtisanPack UI analytics package. Delivers server-side reporting via the GA4 Data API, built on top of the shared Google base package for OAuth2 authentication and scope management.
 
 ## CMS Framework
 
@@ -80,6 +93,18 @@ The essential, foundational package that powers the entire ecosystem. It provide
 ## Forms
 
 A comprehensive form builder and management package for Laravel applications built on Livewire 3. It enables developers to create sophisticated forms through visual interfaces with drag-and-drop form construction, over 20 field types, submission tracking, automated email notifications, multi-step wizard-style forms, conditional field visibility, webhook support for third-party integrations, built-in spam defenses, and role-based access controls.
+
+## Google
+
+The shared foundation for ArtisanPack UI's Google service integrations. Handles Google OAuth2 authentication, token storage and refresh, and scope management, providing a common base that other Google-specific packages (Analytics, Search Console, Tag Manager) build on top of.
+
+## Google Search Console
+
+Google Search Console integration for ArtisanPack UI. Surfaces Search Console performance data through Livewire UI components, built on the shared Google base package for authentication and API access.
+
+## Google Tag Manager
+
+Google Tag Manager integration for ArtisanPack UI. Provides GTM container management and Livewire UI components for configuring and deploying tags, built on the shared Google base package for authentication and API access.
 
 ## Hooks
 
