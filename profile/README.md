@@ -19,7 +19,7 @@ well as clicking through to their respective repositories.
 
 | Package                | Learn More                            | Repository Link                                                             | Version | Status         |
 |------------------------|---------------------------------------|-----------------------------------------------------------------------------|---------|----------------|
-| Accessibility          | [Learn More](#accessibility)          | [View Repository](https://github.com/ArtisanPack-UI/accessibility)          | 2.1.2   | 🟢 Live        |
+| Accessibility          | [Learn More](#accessibility)          | [View Repository](https://github.com/ArtisanPack-UI/accessibility)          | 2.2.0   | 🟢 Live        |
 | AI                     | [Learn More](#ai)                     | [View Repository](https://github.com/ArtisanPack-UI/ai)                     | 1.0.0   | 🟢 Live        |
 | Analytics              | [Learn More](#analytics)              | [View Repository](https://github.com/ArtisanPack-UI/analytics)              | 1.3.0   | 🟢 Live        |
 | Analytics Google       | [Learn More](#analytics-google)       | [View Repository](https://github.com/ArtisanPack-UI/analytics-google)       | Dev     | 🟡 In Progress |
@@ -37,7 +37,7 @@ well as clicking through to their respective repositories.
 | Livewire Drag and Drop | [Learn More](#livewire-drag-and-drop) | [View Repository](https://github.com/ArtisanPack-UI/livewire-drag-and-drop) | 2.0.1   | 🟢 Live        |
 | Livewire Starter Kit   | [Learn More](#livewire-starter-kit)   | [View Repository](https://github.com/ArtisanPack-UI/livewire-starter-kit)   | 1.0.3   | 🟢 Live        |
 | Livewire UI Components | [Learn More](#livewire-ui-components) | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components) | 2.0.5   | 🟢 Live        |
-| Media Library          | [Learn More](#media-library)          | [View Repository](https://github.com/ArtisanPack-UI/media-library)          | 1.2.2   | 🟢 Live        |
+| Media Library          | [Learn More](#media-library)          | [View Repository](https://github.com/ArtisanPack-UI/media-library)          | 1.3.0   | 🟢 Live        |
 | Performance            | [Learn More](#performance)            | [View Repository](https://github.com/ArtisanPack-UI/performance)            | 1.1.0   | 🟢 Live        |
 | Privacy                | [Learn More](#privacy)                | [View Repository](https://github.com/ArtisanPack-UI/privacy)                | 1.0.0   | 🟢 Live        |
 | RBAC                   | [Learn More](#rbac)                   | [View Repository](https://github.com/ArtisanPack-UI/rbac)                   | 1.0.1   | 🟢 Live        |
