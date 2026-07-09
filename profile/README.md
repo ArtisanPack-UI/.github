@@ -23,10 +23,10 @@ well as clicking through to their respective repositories.
 | AI                     | [Learn More](#ai)                     | [View Repository](https://github.com/ArtisanPack-UI/ai)                     | 1.0.0   | 🟢 Live        |
 | Analytics              | [Learn More](#analytics)              | [View Repository](https://github.com/ArtisanPack-UI/analytics)              | 1.3.0   | 🟢 Live        |
 | Analytics Google       | [Learn More](#analytics-google)       | [View Repository](https://github.com/ArtisanPack-UI/analytics-google)       | Dev     | 🟡 In Progress |
-| CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)          | 2.2.3   | 🟢 Live        |
+| CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)          | 2.3.0   | 🟢 Live        |
 | Code Style             | [Learn More](#code-style)             | [View Repository](https://github.com/ArtisanPack-UI/code-style)             | 1.1.1   | 🟢 Live        |
 | Code Style Pint        | [Learn More](#code-style-pint)        | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)        | 1.1.1   | 🟢 Live        |
-| Compliance             | [Learn More](#compliance)             | [View Repository](https://github.com/ArtisanPack-UI/compliance)             | 1.0.1   | 🟢 Live        |
+| Compliance             | [Learn More](#compliance)             | [View Repository](https://github.com/ArtisanPack-UI/compliance)             | 1.1.0   | 🟢 Live        |
 | Core                   | [Learn More](#core)                   | [View Repository](https://github.com/ArtisanPack-UI/core)                   | 1.2.0   | 🟢 Live        |
 | Forms                  | [Learn More](#forms)                  | [View Repository](https://github.com/ArtisanPack-UI/forms)                  | 1.1.3   | 🟢 Live        |
 | Google                 | [Learn More](#google)                 | [View Repository](https://github.com/ArtisanPack-UI/google)                 | Dev     | 🟡 In Progress |
