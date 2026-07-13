@@ -28,7 +28,7 @@ well as clicking through to their respective repositories.
 | Code Style             | [Learn More](#code-style)             | [View Repository](https://github.com/ArtisanPack-UI/code-style)             | 1.1.1   | 🟢 Live        |
 | Code Style Pint        | [Learn More](#code-style-pint)        | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)        | 1.1.1   | 🟢 Live        |
 | Compliance             | [Learn More](#compliance)             | [View Repository](https://github.com/ArtisanPack-UI/compliance)             | 1.1.0   | 🟢 Live        |
-| ConvertKit             | [Learn More](#convertkit)             | [View Repository](https://github.com/ArtisanPack-UI/convertkit)             | Dev     | 🟡 In Progress |
+| ConvertKit             | [Learn More](#convertkit)             | [View Repository](https://github.com/ArtisanPack-UI/convertkit)             | 1.0.0   | 🟢 Live        |
 | Core                   | [Learn More](#core)                   | [View Repository](https://github.com/ArtisanPack-UI/core)                   | 1.2.0   | 🟢 Live        |
 | Ecommerce              | [Learn More](#ecommerce)              | [View Repository](https://github.com/ArtisanPack-UI/ecommerce)              | Dev     | 🟡 In Progress |
 | Forms                  | [Learn More](#forms)                  | [View Repository](https://github.com/ArtisanPack-UI/forms)                  | 1.1.3   | 🟢 Live        |
