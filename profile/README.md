@@ -22,18 +22,22 @@ well as clicking through to their respective repositories.
 | Accessibility          | [Learn More](#accessibility)          | [View Repository](https://github.com/ArtisanPack-UI/accessibility)          | 2.2.0   | 🟢 Live        |
 | AI                     | [Learn More](#ai)                     | [View Repository](https://github.com/ArtisanPack-UI/ai)                     | 1.0.0   | 🟢 Live        |
 | Analytics              | [Learn More](#analytics)              | [View Repository](https://github.com/ArtisanPack-UI/analytics)              | 1.3.0   | 🟢 Live        |
-| Analytics Google       | [Learn More](#analytics-google)       | [View Repository](https://github.com/ArtisanPack-UI/analytics-google)       | Dev     | 🟡 In Progress |
+| Analytics Google       | [Learn More](#analytics-google)       | [View Repository](https://github.com/ArtisanPack-UI/analytics-google)       | 1.0.0   | 🟢 Live        |
+| Bookings               | [Learn More](#bookings)               | [View Repository](https://github.com/ArtisanPack-UI/bookings)               | Dev     | 🟡 In Progress |
 | CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)          | 2.3.0   | 🟢 Live        |
 | Code Style             | [Learn More](#code-style)             | [View Repository](https://github.com/ArtisanPack-UI/code-style)             | 1.1.1   | 🟢 Live        |
 | Code Style Pint        | [Learn More](#code-style-pint)        | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)        | 1.1.1   | 🟢 Live        |
 | Compliance             | [Learn More](#compliance)             | [View Repository](https://github.com/ArtisanPack-UI/compliance)             | 1.1.0   | 🟢 Live        |
+| ConvertKit             | [Learn More](#convertkit)             | [View Repository](https://github.com/ArtisanPack-UI/convertkit)             | Dev     | 🟡 In Progress |
 | Core                   | [Learn More](#core)                   | [View Repository](https://github.com/ArtisanPack-UI/core)                   | 1.2.0   | 🟢 Live        |
+| Ecommerce              | [Learn More](#ecommerce)              | [View Repository](https://github.com/ArtisanPack-UI/ecommerce)              | Dev     | 🟡 In Progress |
 | Forms                  | [Learn More](#forms)                  | [View Repository](https://github.com/ArtisanPack-UI/forms)                  | 1.1.3   | 🟢 Live        |
 | Google                 | [Learn More](#google)                 | [View Repository](https://github.com/ArtisanPack-UI/google)                 | 1.0.0   | 🟢 Live        |
-| Google Search Console  | [Learn More](#google-search-console)  | [View Repository](https://github.com/ArtisanPack-UI/google-search-console)  | Dev     | 🟡 In Progress |
-| Google Tag Manager     | [Learn More](#google-tag-manager)     | [View Repository](https://github.com/ArtisanPack-UI/google-tag-manager)     | Dev     | 🟡 In Progress |
+| Google Search Console  | [Learn More](#google-search-console)  | [View Repository](https://github.com/ArtisanPack-UI/google-search-console)  | 1.0.0   | 🟢 Live        |
+| Google Tag Manager     | [Learn More](#google-tag-manager)     | [View Repository](https://github.com/ArtisanPack-UI/google-tag-manager)     | 1.0.0   | 🟢 Live        |
 | Hooks                  | [Learn More](#hooks)                  | [View Repository](https://github.com/ArtisanPack-UI/hooks)                  | 1.2.1   | 🟢 Live        |
 | Icons                  | [Learn More](#icons)                  | [View Repository](https://github.com/ArtisanPack-UI/icons)                  | 2.1.2   | 🟢 Live        |
+| Liquid Glass           | [Learn More](#liquid-glass)           | [View Repository](https://github.com/ArtisanPack-UI/liquid-glass)           | Dev     | 🟡 In Progress |
 | Livewire Drag and Drop | [Learn More](#livewire-drag-and-drop) | [View Repository](https://github.com/ArtisanPack-UI/livewire-drag-and-drop) | 2.0.1   | 🟢 Live        |
 | Livewire Starter Kit   | [Learn More](#livewire-starter-kit)   | [View Repository](https://github.com/ArtisanPack-UI/livewire-starter-kit)   | 1.0.3   | 🟢 Live        |
 | Livewire UI Components | [Learn More](#livewire-ui-components) | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components) | 2.0.5   | 🟢 Live        |
@@ -70,6 +74,10 @@ A privacy-first analytics package for Laravel applications. Built on Livewire 3,
 
 A Google Analytics (GA4) provider for the ArtisanPack UI analytics package. Delivers server-side reporting via the GA4 Data API, built on top of the shared Google base package for OAuth2 authentication and scope management.
 
+## Bookings
+
+A booking and reservation management package for Laravel applications. This package provides scheduling, calendar management, availability rules, notifications, and payment integration to help developers build robust appointment and reservation systems within their applications.
+
 ## CMS Framework
 
 The flexible backbone for your next CMS. This powerful framework provides all the necessary backend scaffolding, empowering you to create a tailored content management experience for any project. It handles everything from users and roles to dashboard widgets to tables and models for content, so you can skip the boring scaffolding and start building right away.
@@ -86,9 +94,17 @@ A Laravel Pint preset that implements the coding standards defined in the artisa
 
 Regulatory compliance for Laravel applications covering GDPR, CCPA, LGPD, and more. This package provides consent management, data portability, right to erasure, Data Protection Impact Assessments (DPIAs), and compliance reporting to help developers build applications that meet global privacy regulations.
 
+## ConvertKit
+
+ConvertKit (Kit) integration for Laravel applications. This package provides an API client along with tools for managing forms, tags, sequences, and broadcasts, enabling developers to seamlessly integrate ConvertKit's email marketing capabilities into their ArtisanPack UI projects.
+
 ## Core
 
 The essential, foundational package that powers the entire ecosystem. It provides a suite of helpers and utilities designed to make your development workflow smoother and more efficient. This package serves as a core foundation for the ArtisanPack UI ecosystem, offering development helpers and utility functions to streamline developer workflows.
+
+## Ecommerce
+
+A full-featured ecommerce package for Laravel applications. This package provides product catalog management, shopping cart, checkout flows, order management, inventory tracking, and payment gateway integration to help developers launch online stores quickly on the ArtisanPack UI stack.
 
 ## Forms
 
@@ -113,6 +129,10 @@ This package provides a flexible hook system for extending and customizing funct
 ## Icons
 
 An extensibility layer for Blade Icons that enables flexible registration of custom SVG icon sets via config or events. This package extends Blade Icons by providing developers with flexible mechanisms to register and manage custom SVG icon collections, supporting both configuration-based and event-driven registration approaches.
+
+## Liquid Glass
+
+Liquid glass background effects for the ArtisanPack UI visual editor. This package adds a frosted-glass panel with configurable blur, opacity, and tint next to the Color/Background inspector on Group, Cover, and Column blocks, giving content creators modern glass-morphism styling options for their designs.
 
 ## Livewire Drag and Drop
 
