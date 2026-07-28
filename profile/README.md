@@ -24,7 +24,7 @@ well as clicking through to their respective repositories.
 | Analytics              | [Learn More](#analytics)              | [View Repository](https://github.com/ArtisanPack-UI/analytics)              | 1.4.0   | 🟢 Live        |
 | Analytics Google       | [Learn More](#analytics-google)       | [View Repository](https://github.com/ArtisanPack-UI/analytics-google)       | 1.0.0   | 🟢 Live        |
 | Bookings               | [Learn More](#bookings)               | [View Repository](https://github.com/ArtisanPack-UI/bookings)               | Dev     | 🟡 In Progress |
-| CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)          | 2.5.0   | 🟢 Live        |
+| CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)          | 2.5.4   | 🟢 Live        |
 | Code Style             | [Learn More](#code-style)             | [View Repository](https://github.com/ArtisanPack-UI/code-style)             | 1.1.1   | 🟢 Live        |
 | Code Style Pint        | [Learn More](#code-style-pint)        | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)        | 1.1.1   | 🟢 Live        |
 | Compliance             | [Learn More](#compliance)             | [View Repository](https://github.com/ArtisanPack-UI/compliance)             | 1.1.0   | 🟢 Live        |
@@ -36,6 +36,7 @@ well as clicking through to their respective repositories.
 | Google Search Console  | [Learn More](#google-search-console)  | [View Repository](https://github.com/ArtisanPack-UI/google-search-console)  | 1.0.0   | 🟢 Live        |
 | Google Tag Manager     | [Learn More](#google-tag-manager)     | [View Repository](https://github.com/ArtisanPack-UI/google-tag-manager)     | 1.0.0   | 🟢 Live        |
 | Hooks                  | [Learn More](#hooks)                  | [View Repository](https://github.com/ArtisanPack-UI/hooks)                  | 1.3.0   | 🟢 Live        |
+| Hooks - JS             | [Learn More](#hooks---js)             | [View Repository](https://github.com/ArtisanPack-UI/hooks-js)               | 1.0.0   | 🟢 Live        |
 | Icons                  | [Learn More](#icons)                  | [View Repository](https://github.com/ArtisanPack-UI/icons)                  | 2.2.0   | 🟢 Live        |
 | Liquid Glass           | [Learn More](#liquid-glass)           | [View Repository](https://github.com/ArtisanPack-UI/liquid-glass)           | Dev     | 🟡 In Progress |
 | Livewire Drag and Drop | [Learn More](#livewire-drag-and-drop) | [View Repository](https://github.com/ArtisanPack-UI/livewire-drag-and-drop) | 2.0.1   | 🟢 Live        |
@@ -54,7 +55,7 @@ well as clicking through to their respective repositories.
 | Security Auth          | [Learn More](#security-auth)          | [View Repository](https://github.com/ArtisanPack-UI/security-auth)          | 1.0.1   | 🟢 Live        |
 | Security Full          | [Learn More](#security-full)          | [View Repository](https://github.com/ArtisanPack-UI/security-full)          | 1.0.0   | 🟢 Live        |
 | SEO                    | [Learn More](#seo)                    | [View Repository](https://github.com/ArtisanPack-UI/seo)                    | 1.3.0   | 🟢 Live        |
-| Visual Editor          | [Learn More](#visual-editor)          | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)          | 1.5.0   | 🟢 Live        |
+| Visual Editor          | [Learn More](#visual-editor)          | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)          | 1.5.4   | 🟢 Live        |
 | Vue                    | [Learn More](#vue)                    | [View Repository](https://github.com/ArtisanPack-UI/vue)                    | 1.0.0   | 🟢 Live        |
 | Vue Starter Kit        | [Learn More](#vue-starter-kit)        | [View Repository](https://github.com/ArtisanPack-UI/vue-starter-kit)        | 1.0.1   | 🟢 Live        |
 
@@ -125,6 +126,10 @@ Google Tag Manager integration for ArtisanPack UI. Provides GTM container manage
 ## Hooks
 
 This package provides a flexible hook system for extending and customizing functionality throughout your application. It enables developers to tap into various points of the application lifecycle and add custom behavior without modifying core code.
+
+## Hooks - JS
+
+A JavaScript/TypeScript port of the ArtisanPack UI Hooks package, providing the same flexible hook system for extending and customizing functionality in JavaScript and TypeScript applications. It enables developers to tap into application lifecycle points and add custom behavior without modifying core code.
 
 ## Icons
 
