@@ -33,6 +33,8 @@ well as clicking through to their respective repositories.
 | Ecommerce              | [Learn More](#ecommerce)              | [View Repository](https://github.com/ArtisanPack-UI/ecommerce)              | Dev     | 🟡 In Progress |
 | Forms                  | [Learn More](#forms)                  | [View Repository](https://github.com/ArtisanPack-UI/forms)                  | 1.3.0   | 🟢 Live        |
 | Google                 | [Learn More](#google)                 | [View Repository](https://github.com/ArtisanPack-UI/google)                 | 1.0.0   | 🟢 Live        |
+| Google Ads             | [Learn More](#google-ads)             | [View Repository](https://github.com/ArtisanPack-UI/google-ads)             | Dev     | 🔵 Backlog     |
+| Google Data Studio     | [Learn More](#google-data-studio)     | [View Repository](https://github.com/ArtisanPack-UI/google-data-studio)     | Dev     | 🔵 Backlog     |
 | Google Search Console  | [Learn More](#google-search-console)  | [View Repository](https://github.com/ArtisanPack-UI/google-search-console)  | 1.0.0   | 🟢 Live        |
 | Google Tag Manager     | [Learn More](#google-tag-manager)     | [View Repository](https://github.com/ArtisanPack-UI/google-tag-manager)     | 1.0.0   | 🟢 Live        |
 | Hooks                  | [Learn More](#hooks)                  | [View Repository](https://github.com/ArtisanPack-UI/hooks)                  | 1.3.0   | 🟢 Live        |
@@ -43,6 +45,7 @@ well as clicking through to their respective repositories.
 | Livewire Starter Kit   | [Learn More](#livewire-starter-kit)   | [View Repository](https://github.com/ArtisanPack-UI/livewire-starter-kit)   | 1.0.3   | 🟢 Live        |
 | Livewire UI Components | [Learn More](#livewire-ui-components) | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components) | 2.1.0   | 🟢 Live        |
 | Media Library          | [Learn More](#media-library)          | [View Repository](https://github.com/ArtisanPack-UI/media-library)          | 1.4.0   | 🟢 Live        |
+| PageSpeed Insights     | [Learn More](#pagespeed-insights)     | [View Repository](https://github.com/ArtisanPack-UI/pagespeed-insights)     | Dev     | 🟡 In Progress |
 | Performance            | [Learn More](#performance)            | [View Repository](https://github.com/ArtisanPack-UI/performance)            | 1.1.0   | 🟢 Live        |
 | Privacy                | [Learn More](#privacy)                | [View Repository](https://github.com/ArtisanPack-UI/privacy)                | 1.1.0   | 🟢 Live        |
 | RBAC                   | [Learn More](#rbac)                   | [View Repository](https://github.com/ArtisanPack-UI/rbac)                   | 1.1.0   | 🟢 Live        |
@@ -115,6 +118,14 @@ A comprehensive form builder and management package for Laravel applications bui
 
 The shared foundation for ArtisanPack UI's Google service integrations. Handles Google OAuth2 authentication, token storage and refresh, and scope management, providing a common base that other Google-specific packages (Analytics, Search Console, Tag Manager) build on top of.
 
+## Google Ads
+
+Google Ads reporting for ArtisanPack UI. Provides read-only campaign performance dashboards powered by GAQL, with drop-in Livewire, React, and Vue components, built on the shared Google base package for authentication and API access.
+
+## Google Data Studio
+
+Google Data Studio (Looker Studio) report embedding for Laravel applications. Provides a managed report registry, per-viewer filtering, and UI components for surfacing reports inside your app, built on the shared Google base package for authentication and API access.
+
 ## Google Search Console
 
 Google Search Console integration for ArtisanPack UI. Surfaces Search Console performance data through Livewire UI components, built on the shared Google base package for authentication and API access.
@@ -154,6 +165,10 @@ Stop reinventing the wheel and start building dynamic Livewire applications fast
 ## Media Library
 
 Effortlessly manage your application's media with a powerful, intuitive library. It handles the complexity of file uploads, organization, and associations, so you can integrate rich media content with ease. This package provides developers with a comprehensive solution for integrating media management capabilities into applications, streamlining the processes of uploading files, organizing assets, and establishing media associations.
+
+## PageSpeed Insights
+
+PageSpeed Insights score tracking for Laravel applications. This package records Core Web Vitals and Lighthouse scores over time, surfaces historical trends, alerts on regressions, and ships drop-in UI components for Livewire, React, and Vue.
 
 ## Performance
 
