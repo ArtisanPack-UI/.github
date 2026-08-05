@@ -24,7 +24,7 @@ well as clicking through to their respective repositories.
 | Analytics              | [Learn More](#analytics)              | [View Repository](https://github.com/ArtisanPack-UI/analytics)              | 1.4.0   | 🟢 Live        |
 | Analytics Google       | [Learn More](#analytics-google)       | [View Repository](https://github.com/ArtisanPack-UI/analytics-google)       | 1.0.0   | 🟢 Live        |
 | Bookings               | [Learn More](#bookings)               | [View Repository](https://github.com/ArtisanPack-UI/bookings)               | Dev     | 🟡 In Progress |
-| CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)          | 2.7.1   | 🟢 Live        |
+| CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)          | 2.7.2   | 🟢 Live        |
 | Code Style             | [Learn More](#code-style)             | [View Repository](https://github.com/ArtisanPack-UI/code-style)             | 1.1.1   | 🟢 Live        |
 | Code Style Pint        | [Learn More](#code-style-pint)        | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)        | 1.1.1   | 🟢 Live        |
 | Compliance             | [Learn More](#compliance)             | [View Repository](https://github.com/ArtisanPack-UI/compliance)             | 1.1.0   | 🟢 Live        |
