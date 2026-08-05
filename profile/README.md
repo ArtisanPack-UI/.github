@@ -45,7 +45,7 @@ well as clicking through to their respective repositories.
 | Livewire Starter Kit   | [Learn More](#livewire-starter-kit)   | [View Repository](https://github.com/ArtisanPack-UI/livewire-starter-kit)   | 1.0.3   | 🟢 Live        |
 | Livewire UI Components | [Learn More](#livewire-ui-components) | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components) | 2.1.0   | 🟢 Live        |
 | Media Library          | [Learn More](#media-library)          | [View Repository](https://github.com/ArtisanPack-UI/media-library)          | 1.4.0   | 🟢 Live        |
-| PageSpeed Insights     | [Learn More](#pagespeed-insights)     | [View Repository](https://github.com/ArtisanPack-UI/pagespeed-insights)     | Dev     | 🟡 In Progress |
+| PageSpeed Insights     | [Learn More](#pagespeed-insights)     | [View Repository](https://github.com/ArtisanPack-UI/pagespeed-insights)     | 1.0.0     | 🟢 Live |
 | Performance            | [Learn More](#performance)            | [View Repository](https://github.com/ArtisanPack-UI/performance)            | 1.1.0   | 🟢 Live        |
 | Privacy                | [Learn More](#privacy)                | [View Repository](https://github.com/ArtisanPack-UI/privacy)                | 1.1.0   | 🟢 Live        |
 | RBAC                   | [Learn More](#rbac)                   | [View Repository](https://github.com/ArtisanPack-UI/rbac)                   | 1.1.0   | 🟢 Live        |
