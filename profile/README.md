@@ -20,10 +20,12 @@ well as clicking through to their respective repositories.
 | Package                | Learn More                            | Repository Link                                                             | Version | Status         |
 |------------------------|---------------------------------------|-----------------------------------------------------------------------------|---------|----------------|
 | Accessibility          | [Learn More](#accessibility)          | [View Repository](https://github.com/ArtisanPack-UI/accessibility)          | 2.3.0   | 🟢 Live        |
-| AI                     | [Learn More](#ai)                     | [View Repository](https://github.com/ArtisanPack-UI/ai)                     | 1.1.0   | 🟢 Live        |
+| AI                     | [Learn More](#ai)                     | [View Repository](https://github.com/ArtisanPack-UI/ai)                     | 1.2.0   | 🟢 Live        |
 | Analytics              | [Learn More](#analytics)              | [View Repository](https://github.com/ArtisanPack-UI/analytics)              | 1.5.1   | 🟢 Live        |
 | Analytics Google       | [Learn More](#analytics-google)       | [View Repository](https://github.com/ArtisanPack-UI/analytics-google)       | 1.1.0   | 🟢 Live        |
-| Bookings               | [Learn More](#bookings)               | [View Repository](https://github.com/ArtisanPack-UI/bookings)               | 1.1.0   | 🟢 Live        |
+| Apple OAuth            | [Learn More](#apple-oauth)            | [View Repository](https://github.com/ArtisanPack-UI/apple-oauth)            | Dev     | 🔵 Backlog     |
+| Bing Places            | [Learn More](#bing-places)            | [View Repository](https://github.com/ArtisanPack-UI/bing-places)            | Dev     | 🔵 Backlog     |
+| Bookings               | [Learn More](#bookings)               | [View Repository](https://github.com/ArtisanPack-UI/bookings)               | 1.2.2   | 🟢 Live        |
 | CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)          | 2.10.1  | 🟢 Live        |
 | Code Style             | [Learn More](#code-style)             | [View Repository](https://github.com/ArtisanPack-UI/code-style)             | 1.2.0   | 🟢 Live        |
 | Code Style Pint        | [Learn More](#code-style-pint)        | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)        | 1.1.1   | 🟢 Live        |
@@ -31,9 +33,10 @@ well as clicking through to their respective repositories.
 | ConvertKit             | [Learn More](#convertkit)             | [View Repository](https://github.com/ArtisanPack-UI/convertkit)             | 1.2.0   | 🟢 Live        |
 | Core                   | [Learn More](#core)                   | [View Repository](https://github.com/ArtisanPack-UI/core)                   | 1.3.1   | 🟢 Live        |
 | Ecommerce              | [Learn More](#ecommerce)              | [View Repository](https://github.com/ArtisanPack-UI/ecommerce)              | Dev     | 🟡 In Progress |
-| Forms                  | [Learn More](#forms)                  | [View Repository](https://github.com/ArtisanPack-UI/forms)                  | 1.4.0   | 🟢 Live        |
+| Forms                  | [Learn More](#forms)                  | [View Repository](https://github.com/ArtisanPack-UI/forms)                  | 1.5.0   | 🟢 Live        |
 | Google                 | [Learn More](#google)                 | [View Repository](https://github.com/ArtisanPack-UI/google)                 | 1.0.0   | 🟢 Live        |
 | Google Ads             | [Learn More](#google-ads)             | [View Repository](https://github.com/ArtisanPack-UI/google-ads)             | Dev     | 🔵 Backlog     |
+| Google Business Profile| [Learn More](#google-business-profile)| [View Repository](https://github.com/ArtisanPack-UI/google-business-profile)| Dev     | 🔵 Backlog     |
 | Google Data Studio     | [Learn More](#google-data-studio)     | [View Repository](https://github.com/ArtisanPack-UI/google-data-studio)     | Dev     | 🔵 Backlog     |
 | Google Search Console  | [Learn More](#google-search-console)  | [View Repository](https://github.com/ArtisanPack-UI/google-search-console)  | 1.0.0   | 🟢 Live        |
 | Google Tag Manager     | [Learn More](#google-tag-manager)     | [View Repository](https://github.com/ArtisanPack-UI/google-tag-manager)     | 1.0.0   | 🟢 Live        |
@@ -45,7 +48,8 @@ well as clicking through to their respective repositories.
 | Livewire Starter Kit   | [Learn More](#livewire-starter-kit)   | [View Repository](https://github.com/ArtisanPack-UI/livewire-starter-kit)   | 1.0.3   | 🟢 Live        |
 | Livewire UI Components | [Learn More](#livewire-ui-components) | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components) | 2.1.0   | 🟢 Live        |
 | Media Library          | [Learn More](#media-library)          | [View Repository](https://github.com/ArtisanPack-UI/media-library)          | 1.4.0   | 🟢 Live        |
-| PageSpeed Insights     | [Learn More](#pagespeed-insights)     | [View Repository](https://github.com/ArtisanPack-UI/pagespeed-insights)     | 1.0.0   | 🟢 Live |
+| Microsoft OAuth        | [Learn More](#microsoft-oauth)        | [View Repository](https://github.com/ArtisanPack-UI/microsoft-oauth)        | Dev     | 🔵 Backlog     |
+| PageSpeed Insights     | [Learn More](#pagespeed-insights)     | [View Repository](https://github.com/ArtisanPack-UI/pagespeed-insights)     | 1.0.0   | 🟢 Live        |
 | Performance            | [Learn More](#performance)            | [View Repository](https://github.com/ArtisanPack-UI/performance)            | 1.1.0   | 🟢 Live        |
 | Privacy                | [Learn More](#privacy)                | [View Repository](https://github.com/ArtisanPack-UI/privacy)                | 1.1.0   | 🟢 Live        |
 | RBAC                   | [Learn More](#rbac)                   | [View Repository](https://github.com/ArtisanPack-UI/rbac)                   | 1.1.0   | 🟢 Live        |
@@ -54,11 +58,12 @@ well as clicking through to their respective repositories.
 | Secure Uploads         | [Learn More](#secure-uploads)         | [View Repository](https://github.com/ArtisanPack-UI/secure-uploads)         | 1.0.1   | 🟢 Live        |
 | Security               | [Learn More](#security)               | [View Repository](https://github.com/ArtisanPack-UI/security)               | 2.1.0   | 🟢 Live        |
 | Security Advanced Auth | [Learn More](#security-advanced-auth) | [View Repository](https://github.com/ArtisanPack-UI/security-advanced-auth) | 1.0.1   | 🟢 Live        |
-| Security Analytics     | [Learn More](#security-analytics)     | [View Repository](https://github.com/ArtisanPack-UI/security-analytics)     | 1.1.0   | 🟢 Live        |
+| Security Analytics     | [Learn More](#security-analytics)     | [View Repository](https://github.com/ArtisanPack-UI/security-analytics)     | 1.2.0   | 🟢 Live        |
 | Security Auth          | [Learn More](#security-auth)          | [View Repository](https://github.com/ArtisanPack-UI/security-auth)          | 1.0.1   | 🟢 Live        |
 | Security Full          | [Learn More](#security-full)          | [View Repository](https://github.com/ArtisanPack-UI/security-full)          | 1.0.0   | 🟢 Live        |
 | SEO                    | [Learn More](#seo)                    | [View Repository](https://github.com/ArtisanPack-UI/seo)                    | 1.3.0   | 🟢 Live        |
-| Visual Editor          | [Learn More](#visual-editor)          | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)          | 1.7.1   | 🟢 Live        |
+| Specification          | [Learn More](#specification)          | [View Repository](https://github.com/ArtisanPack-UI/specification)          | Dev     | 🔵 Backlog     |
+| Visual Editor          | [Learn More](#visual-editor)          | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)          | 1.8.0   | 🟢 Live        |
 | Vue                    | [Learn More](#vue)                    | [View Repository](https://github.com/ArtisanPack-UI/vue)                    | 1.0.0   | 🟢 Live        |
 | Vue Starter Kit        | [Learn More](#vue-starter-kit)        | [View Repository](https://github.com/ArtisanPack-UI/vue-starter-kit)        | 1.0.1   | 🟢 Live        |
 
@@ -78,9 +83,17 @@ A privacy-first analytics package for Laravel applications. Built on Livewire 3,
 
 A Google Analytics (GA4) provider for the ArtisanPack UI analytics package. Delivers server-side reporting via the GA4 Data API, built on top of the shared Google base package for OAuth2 authentication and scope management.
 
+## Apple OAuth
+
+Shared Apple OAuth2 authentication and token management for the ArtisanPack UI ecosystem. Handles Sign in with Apple credential exchange, token storage and refresh, and scope management, providing the common auth layer that ArtisanPack UI's calendar-sync and other Apple integrations build on.
+
+## Bing Places
+
+A typed Bing Places for Business API client and setup guidance for the ArtisanPack UI ecosystem. Provides listing management primitives against Microsoft's Bing Places APIs, pending Microsoft partner API access, so local-business tools in ArtisanPack UI can surface and sync Bing Places data alongside other providers.
+
 ## Bookings
 
-A booking and reservation management package for Laravel applications. This package provides scheduling, calendar management, availability rules, notifications, and payment integration to help developers build robust appointment and reservation systems within their applications.
+A multi-provider bookings and appointments engine for Laravel applications. Supports 1:1, group, recurring, and round-robin scheduling with two-way Google, Microsoft 365, and Apple calendar sync, along with availability rules, notifications, and payment integration, giving developers a full appointment and reservation system on the ArtisanPack UI stack.
 
 ## CMS Framework
 
@@ -121,6 +134,10 @@ The shared foundation for ArtisanPack UI's Google service integrations. Handles 
 ## Google Ads
 
 Google Ads reporting for ArtisanPack UI. Provides read-only campaign performance dashboards powered by GAQL, with drop-in Livewire, React, and Vue components, built on the shared Google base package for authentication and API access.
+
+## Google Business Profile
+
+An OAuth-free, UI-free API client for the Google Business Profile family of APIs (locations, performance, reviews, posts). Provides typed request and response primitives that other ArtisanPack UI packages can compose into local-business dashboards and management surfaces, built on the shared Google base package for authentication.
 
 ## Google Data Studio
 
@@ -165,6 +182,10 @@ Stop reinventing the wheel and start building dynamic Livewire applications fast
 ## Media Library
 
 Effortlessly manage your application's media with a powerful, intuitive library. It handles the complexity of file uploads, organization, and associations, so you can integrate rich media content with ease. This package provides developers with a comprehensive solution for integrating media management capabilities into applications, streamlining the processes of uploading files, organizing assets, and establishing media associations.
+
+## Microsoft OAuth
+
+Shared Microsoft identity platform (Azure AD / Entra) OAuth2 authentication for the ArtisanPack UI ecosystem. Handles the OAuth2 authorization code flow, token storage and refresh, and scope management, providing the common auth layer that Microsoft 365-backed integrations (calendar sync, Graph APIs, and more) build on.
 
 ## PageSpeed Insights
 
@@ -217,6 +238,10 @@ A meta-package that installs the complete ArtisanPack UI security suite. This pa
 ## SEO
 
 A comprehensive SEO management package for Laravel applications built on Livewire 3, enabling developers to manage search engine optimization through a visual interface. It provides meta tag and schema control with 14 JSON-LD schema types, Open Graph and Twitter Card generation for social sharing, multi-language SEO with hreflang tags, URL redirect management with tracking, sitemap generation for standard, image, video, and news content, and content analysis with built-in quality scoring analyzers.
+
+## Specification
+
+Ingests the [specification.website](https://specification.website) Open Knowledge Format into a local, queryable index and exposes the SpecCheck registry that other ArtisanPack UI packages build compliance and quality checks on top of. Gives packages across the ecosystem a shared, versioned source of truth for standards, guidelines, and best practices.
 
 ## Visual Editor
 
