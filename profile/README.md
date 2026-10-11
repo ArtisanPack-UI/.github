@@ -17,55 +17,58 @@ explore and innovate! Happy coding!
 Below is a list of packages that are under the ArtisanPack UI umbrella. You can learn more about each package here as
 well as clicking through to their respective repositories.
 
-| Package                | Learn More                            | Repository Link                                                             | Version | Status         |
-|------------------------|---------------------------------------|-----------------------------------------------------------------------------|---------|----------------|
-| Accessibility          | [Learn More](#accessibility)          | [View Repository](https://github.com/ArtisanPack-UI/accessibility)          | 2.3.0   | 🟢 Live        |
-| AI                     | [Learn More](#ai)                     | [View Repository](https://github.com/ArtisanPack-UI/ai)                     | 1.2.0   | 🟢 Live        |
-| Analytics              | [Learn More](#analytics)              | [View Repository](https://github.com/ArtisanPack-UI/analytics)              | 1.5.1   | 🟢 Live        |
-| Analytics Google       | [Learn More](#analytics-google)       | [View Repository](https://github.com/ArtisanPack-UI/analytics-google)       | 1.1.0   | 🟢 Live        |
-| Apple OAuth            | [Learn More](#apple-oauth)            | [View Repository](https://github.com/ArtisanPack-UI/apple-oauth)            | 1.0.0   | 🟢 Live        |
-| Bing Places            | [Learn More](#bing-places)            | [View Repository](https://github.com/ArtisanPack-UI/bing-places)            | 1.0.0   | 🟢 Live        |
-| Bookings               | [Learn More](#bookings)               | [View Repository](https://github.com/ArtisanPack-UI/bookings)               | 1.2.2   | 🟢 Live        |
-| CMS Framework          | [Learn More](#cms-framework)          | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)          | 2.10.1  | 🟢 Live        |
-| Code Style             | [Learn More](#code-style)             | [View Repository](https://github.com/ArtisanPack-UI/code-style)             | 1.2.0   | 🟢 Live        |
-| Code Style Pint        | [Learn More](#code-style-pint)        | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)        | 1.1.1   | 🟢 Live        |
-| Compliance             | [Learn More](#compliance)             | [View Repository](https://github.com/ArtisanPack-UI/compliance)             | 1.1.0   | 🟢 Live        |
-| ConvertKit             | [Learn More](#convertkit)             | [View Repository](https://github.com/ArtisanPack-UI/convertkit)             | 1.2.0   | 🟢 Live        |
-| Core                   | [Learn More](#core)                   | [View Repository](https://github.com/ArtisanPack-UI/core)                   | 1.3.1   | 🟢 Live        |
-| Ecommerce              | [Learn More](#ecommerce)              | [View Repository](https://github.com/ArtisanPack-UI/ecommerce)              | Dev     | 🟡 In Progress |
-| Forms                  | [Learn More](#forms)                  | [View Repository](https://github.com/ArtisanPack-UI/forms)                  | 1.5.0   | 🟢 Live        |
-| Google                 | [Learn More](#google)                 | [View Repository](https://github.com/ArtisanPack-UI/google)                 | 1.1.0   | 🟢 Live        |
-| Google Ads             | [Learn More](#google-ads)             | [View Repository](https://github.com/ArtisanPack-UI/google-ads)             | Dev     | 🔵 Backlog     |
-| Google Business Profile| [Learn More](#google-business-profile)| [View Repository](https://github.com/ArtisanPack-UI/google-business-profile)| 1.0.0   | 🟢 Live        |
-| Google Data Studio     | [Learn More](#google-data-studio)     | [View Repository](https://github.com/ArtisanPack-UI/google-data-studio)     | Dev     | 🔵 Backlog     |
-| Google Search Console  | [Learn More](#google-search-console)  | [View Repository](https://github.com/ArtisanPack-UI/google-search-console)  | 1.0.0   | 🟢 Live        |
-| Google Tag Manager     | [Learn More](#google-tag-manager)     | [View Repository](https://github.com/ArtisanPack-UI/google-tag-manager)     | 1.0.0   | 🟢 Live        |
-| Hooks                  | [Learn More](#hooks)                  | [View Repository](https://github.com/ArtisanPack-UI/hooks)                  | 1.3.0   | 🟢 Live        |
-| Hooks - JS             | [Learn More](#hooks---js)             | [View Repository](https://github.com/ArtisanPack-UI/hooks-js)               | 1.0.0   | 🟢 Live        |
-| Icons                  | [Learn More](#icons)                  | [View Repository](https://github.com/ArtisanPack-UI/icons)                  | 2.2.0   | 🟢 Live        |
-| Liquid Glass           | [Learn More](#liquid-glass)           | [View Repository](https://github.com/ArtisanPack-UI/liquid-glass)           | Dev     | 🟡 In Progress |
-| Livewire Drag and Drop | [Learn More](#livewire-drag-and-drop) | [View Repository](https://github.com/ArtisanPack-UI/livewire-drag-and-drop) | 2.0.1   | 🟢 Live        |
-| Livewire Starter Kit   | [Learn More](#livewire-starter-kit)   | [View Repository](https://github.com/ArtisanPack-UI/livewire-starter-kit)   | 1.0.3   | 🟢 Live        |
-| Livewire UI Components | [Learn More](#livewire-ui-components) | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components) | 2.1.0   | 🟢 Live        |
-| Media Library          | [Learn More](#media-library)          | [View Repository](https://github.com/ArtisanPack-UI/media-library)          | 1.5.0   | 🟢 Live        |
-| Microsoft OAuth        | [Learn More](#microsoft-oauth)        | [View Repository](https://github.com/ArtisanPack-UI/microsoft-oauth)        | 1.0.0   | 🟢 Live        |
-| PageSpeed Insights     | [Learn More](#pagespeed-insights)     | [View Repository](https://github.com/ArtisanPack-UI/pagespeed-insights)     | 1.0.0   | 🟢 Live        |
-| Performance            | [Learn More](#performance)            | [View Repository](https://github.com/ArtisanPack-UI/performance)            | 1.1.0   | 🟢 Live        |
-| Privacy                | [Learn More](#privacy)                | [View Repository](https://github.com/ArtisanPack-UI/privacy)                | 1.1.0   | 🟢 Live        |
-| RBAC                   | [Learn More](#rbac)                   | [View Repository](https://github.com/ArtisanPack-UI/rbac)                   | 1.1.0   | 🟢 Live        |
-| React                  | [Learn More](#react)                  | [View Repository](https://github.com/ArtisanPack-UI/react)                  | 1.0.1   | 🟢 Live        |
-| React Starter Kit      | [Learn More](#react-starter-kit)      | [View Repository](https://github.com/ArtisanPack-UI/react-starter-kit)      | 1.0.1   | 🟢 Live        |
-| Secure Uploads         | [Learn More](#secure-uploads)         | [View Repository](https://github.com/ArtisanPack-UI/secure-uploads)         | 1.0.1   | 🟢 Live        |
-| Security               | [Learn More](#security)               | [View Repository](https://github.com/ArtisanPack-UI/security)               | 2.1.0   | 🟢 Live        |
-| Security Advanced Auth | [Learn More](#security-advanced-auth) | [View Repository](https://github.com/ArtisanPack-UI/security-advanced-auth) | 1.0.1   | 🟢 Live        |
-| Security Analytics     | [Learn More](#security-analytics)     | [View Repository](https://github.com/ArtisanPack-UI/security-analytics)     | 1.2.0   | 🟢 Live        |
-| Security Auth          | [Learn More](#security-auth)          | [View Repository](https://github.com/ArtisanPack-UI/security-auth)          | 1.0.1   | 🟢 Live        |
-| Security Full          | [Learn More](#security-full)          | [View Repository](https://github.com/ArtisanPack-UI/security-full)          | 1.0.0   | 🟢 Live        |
-| SEO                    | [Learn More](#seo)                    | [View Repository](https://github.com/ArtisanPack-UI/seo)                    | 1.4.0   | 🟢 Live        |
-| Specification          | [Learn More](#specification)          | [View Repository](https://github.com/ArtisanPack-UI/specification)          | Dev     | 🔵 Backlog     |
-| Visual Editor          | [Learn More](#visual-editor)          | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)          | 1.11.0  | 🟢 Live        |
-| Vue                    | [Learn More](#vue)                    | [View Repository](https://github.com/ArtisanPack-UI/vue)                    | 1.0.0   | 🟢 Live        |
-| Vue Starter Kit        | [Learn More](#vue-starter-kit)        | [View Repository](https://github.com/ArtisanPack-UI/vue-starter-kit)        | 1.0.1   | 🟢 Live        |
+| Package                       | Learn More                                   | Repository Link                                                                    | Version | Status        |
+|-------------------------------|----------------------------------------------|------------------------------------------------------------------------------------|---------|---------------|
+| Accessibility                 | [Learn More](#accessibility)                 | [View Repository](https://github.com/ArtisanPack-UI/accessibility)                 | 2.3.0   | 🟢 Live        |
+| AI                            | [Learn More](#ai)                            | [View Repository](https://github.com/ArtisanPack-UI/ai)                            | 1.2.0   | 🟢 Live        |
+| Analytics                     | [Learn More](#analytics)                     | [View Repository](https://github.com/ArtisanPack-UI/analytics)                     | 1.5.1   | 🟢 Live        |
+| Analytics Google              | [Learn More](#analytics-google)              | [View Repository](https://github.com/ArtisanPack-UI/analytics-google)              | 1.1.0   | 🟢 Live        |
+| Apple OAuth                   | [Learn More](#apple-oauth)                   | [View Repository](https://github.com/ArtisanPack-UI/apple-oauth)                   | 1.2.0   | 🟢 Live        |
+| Bing Places                   | [Learn More](#bing-places)                   | [View Repository](https://github.com/ArtisanPack-UI/bing-places)                   | 1.0.0   | 🟢 Live        |
+| Bookings                      | [Learn More](#bookings)                      | [View Repository](https://github.com/ArtisanPack-UI/bookings)                      | 1.2.2   | 🟢 Live        |
+| CMS Framework                 | [Learn More](#cms-framework)                 | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)                 | 2.13.0  | 🟢 Live        |
+| Code Style                    | [Learn More](#code-style)                    | [View Repository](https://github.com/ArtisanPack-UI/code-style)                    | 1.2.0   | 🟢 Live        |
+| Code Style Pint               | [Learn More](#code-style-pint)               | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)               | 1.1.1   | 🟢 Live        |
+| Compliance                    | [Learn More](#compliance)                    | [View Repository](https://github.com/ArtisanPack-UI/compliance)                    | 1.1.0   | 🟢 Live        |
+| ConvertKit                    | [Learn More](#convertkit)                    | [View Repository](https://github.com/ArtisanPack-UI/convertkit)                    | 1.2.0   | 🟢 Live        |
+| Core                          | [Learn More](#core)                          | [View Repository](https://github.com/ArtisanPack-UI/core)                          | 1.3.1   | 🟢 Live        |
+| Ecommerce                     | [Learn More](#ecommerce)                     | [View Repository](https://github.com/ArtisanPack-UI/ecommerce)                     | 1.0.1   | 🟢 Live        |
+| Ecommerce Admin Livewire      | [Learn More](#ecommerce-admin-livewire)      | [View Repository](https://github.com/ArtisanPack-UI/ecommerce-admin-livewire)      | 1.0.0   | 🟢 Live        |
+| Ecommerce Storefront Livewire | [Learn More](#ecommerce-storefront-livewire) | [View Repository](https://github.com/ArtisanPack-UI/ecommerce-storefront-livewire) | Dev     | 🟡 In Progress |
+| Forms                         | [Learn More](#forms)                         | [View Repository](https://github.com/ArtisanPack-UI/forms)                         | 1.5.0   | 🟢 Live        |
+| Google                        | [Learn More](#google)                        | [View Repository](https://github.com/ArtisanPack-UI/google)                        | 1.3.0   | 🟢 Live        |
+| Google Ads                    | [Learn More](#google-ads)                    | [View Repository](https://github.com/ArtisanPack-UI/google-ads)                    | Dev     | 🔵 Backlog     |
+| Google Business Profile       | [Learn More](#google-business-profile)       | [View Repository](https://github.com/ArtisanPack-UI/google-business-profile)       | 1.0.0   | 🟢 Live        |
+| Google Data Studio            | [Learn More](#google-data-studio)            | [View Repository](https://github.com/ArtisanPack-UI/google-data-studio)            | Dev     | 🔵 Backlog     |
+| Google Search Console         | [Learn More](#google-search-console)         | [View Repository](https://github.com/ArtisanPack-UI/google-search-console)         | 1.0.0   | 🟢 Live        |
+| Google Tag Manager            | [Learn More](#google-tag-manager)            | [View Repository](https://github.com/ArtisanPack-UI/google-tag-manager)            | 1.0.0   | 🟢 Live        |
+| Hooks                         | [Learn More](#hooks)                         | [View Repository](https://github.com/ArtisanPack-UI/hooks)                         | 1.3.0   | 🟢 Live        |
+| Hooks - JS                    | [Learn More](#hooks---js)                    | [View Repository](https://github.com/ArtisanPack-UI/hooks-js)                      | 1.0.0   | 🟢 Live        |
+| Icons                         | [Learn More](#icons)                         | [View Repository](https://github.com/ArtisanPack-UI/icons)                         | 2.2.0   | 🟢 Live        |
+| Liquid Glass                  | [Learn More](#liquid-glass)                  | [View Repository](https://github.com/ArtisanPack-UI/liquid-glass)                  | Dev     | 🟡 In Progress |
+| Livewire Drag and Drop        | [Learn More](#livewire-drag-and-drop)        | [View Repository](https://github.com/ArtisanPack-UI/livewire-drag-and-drop)        | 2.0.1   | 🟢 Live        |
+| Livewire Starter Kit          | [Learn More](#livewire-starter-kit)          | [View Repository](https://github.com/ArtisanPack-UI/livewire-starter-kit)          | 2.0.0   | 🟢 Live        |
+| Livewire UI Components        | [Learn More](#livewire-ui-components)        | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components)        | 2.1.0   | 🟢 Live        |
+| Media Library                 | [Learn More](#media-library)                 | [View Repository](https://github.com/ArtisanPack-UI/media-library)                 | 1.5.0   | 🟢 Live        |
+| Microsoft OAuth               | [Learn More](#microsoft-oauth)               | [View Repository](https://github.com/ArtisanPack-UI/microsoft-oauth)               | 1.1.0   | 🟢 Live        |
+| PageSpeed Insights            | [Learn More](#pagespeed-insights)            | [View Repository](https://github.com/ArtisanPack-UI/pagespeed-insights)            | 1.0.0   | 🟢 Live        |
+| Performance                   | [Learn More](#performance)                   | [View Repository](https://github.com/ArtisanPack-UI/performance)                   | 1.1.0   | 🟢 Live        |
+| Privacy                       | [Learn More](#privacy)                       | [View Repository](https://github.com/ArtisanPack-UI/privacy)                       | 1.1.0   | 🟢 Live        |
+| RBAC                          | [Learn More](#rbac)                          | [View Repository](https://github.com/ArtisanPack-UI/rbac)                          | 1.1.0   | 🟢 Live        |
+| React                         | [Learn More](#react)                         | [View Repository](https://github.com/ArtisanPack-UI/react)                         | 1.0.1   | 🟢 Live        |
+| React Starter Kit             | [Learn More](#react-starter-kit)             | [View Repository](https://github.com/ArtisanPack-UI/react-starter-kit)             | 2.0.0   | 🟢 Live        |
+| Secure Uploads                | [Learn More](#secure-uploads)                | [View Repository](https://github.com/ArtisanPack-UI/secure-uploads)                | 1.0.1   | 🟢 Live        |
+| Security                      | [Learn More](#security)                      | [View Repository](https://github.com/ArtisanPack-UI/security)                      | 2.1.0   | 🟢 Live        |
+| Security Advanced Auth        | [Learn More](#security-advanced-auth)        | [View Repository](https://github.com/ArtisanPack-UI/security-advanced-auth)        | 1.0.1   | 🟢 Live        |
+| Security Analytics            | [Learn More](#security-analytics)            | [View Repository](https://github.com/ArtisanPack-UI/security-analytics)            | 1.2.0   | 🟢 Live        |
+| Security Auth                 | [Learn More](#security-auth)                 | [View Repository](https://github.com/ArtisanPack-UI/security-auth)                 | 1.0.1   | 🟢 Live        |
+| Security Full                 | [Learn More](#security-full)                 | [View Repository](https://github.com/ArtisanPack-UI/security-full)                 | 1.0.0   | 🟢 Live        |
+| SEO                           | [Learn More](#seo)                           | [View Repository](https://github.com/ArtisanPack-UI/seo)                           | 1.7.0   | 🟢 Live        |
+| Shipping Labels               | [Learn More](#shipping-labels)               | [View Repository](https://github.com/ArtisanPack-UI/shipping-labels)               | Dev     | 🟡 In Progress |
+| Specification                 | [Learn More](#specification)                 | [View Repository](https://github.com/ArtisanPack-UI/specification)                 | 1.0.0   | 🟢 Live        |
+| Visual Editor                 | [Learn More](#visual-editor)                 | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)                 | 1.13.0  | 🟢 Live        |
+| Vue                           | [Learn More](#vue)                           | [View Repository](https://github.com/ArtisanPack-UI/vue)                           | 1.0.0   | 🟢 Live        |
+| Vue Starter Kit               | [Learn More](#vue-starter-kit)               | [View Repository](https://github.com/ArtisanPack-UI/vue-starter-kit)               | 2.0.0   | 🟢 Live        |
 
 ## Accessibility
 
@@ -121,7 +124,15 @@ The essential, foundational package that powers the entire ecosystem. It provide
 
 ## Ecommerce
 
-A full-featured ecommerce package for Laravel applications. This package provides product catalog management, shopping cart, checkout flows, order management, inventory tracking, and payment gateway integration to help developers launch online stores quickly on the ArtisanPack UI stack.
+A headless commerce engine for Laravel that delivers WooCommerce-level features without the legacy baggage. This package provides the models, REST and GraphQL APIs, events, and hooks behind products, carts, checkout, orders, inventory, and payments, while the user interfaces ship as separate satellite packages so you can pair the engine with whichever frontend fits your project.
+
+## Ecommerce Admin Livewire
+
+A Livewire admin for the ArtisanPack UI ecommerce engine. It provides management screens for products, orders, customers, promotions, tax, shipping, reports, and settings, along with a command palette, activity timelines, and internal notes, all built on the Livewire UI Components package.
+
+## Ecommerce Storefront Livewire
+
+A Livewire storefront for the ArtisanPack UI ecommerce engine. It provides the catalog, product pages, cart and mini-cart, multi-step or single-page checkout, customer accounts, guest order lookup, faceted search, and commerce blocks for the visual editor, all built on the Livewire UI Components package.
 
 ## Forms
 
@@ -217,7 +228,7 @@ Secure file upload handling for Laravel applications. This package provides file
 
 ## Security
 
-A straightforward, powerful toolkit for securing your application. It provides essential functions for escaping and sanitizing data, making it simple to implement robust security measures throughout your project. This package focuses on application security by offering data escaping and sanitization utilities designed to help developers implement protection mechanisms across their codebase.
+A straightforward, powerful toolkit for securing your application. It provides the core security utilities for Laravel, including input sanitization, output escaping, KSES HTML filtering, Content Security Policy support, and security headers middleware, making it simple to implement robust protection throughout your project.
 
 ## Security Advanced Auth
 
@@ -237,7 +248,11 @@ A meta-package that installs the complete ArtisanPack UI security suite. This pa
 
 ## SEO
 
-A comprehensive SEO management package for Laravel applications built on Livewire 3, enabling developers to manage search engine optimization through a visual interface. It provides meta tag and schema control with 14 JSON-LD schema types, Open Graph and Twitter Card generation for social sharing, multi-language SEO with hreflang tags, URL redirect management with tracking, sitemap generation for standard, image, video, and news content, and content analysis with built-in quality scoring analyzers.
+A comprehensive SEO management package for Laravel applications built on Livewire 3 and 4, enabling developers to manage search engine optimization through a visual interface. It provides meta tag and schema control with 14 JSON-LD schema types, Open Graph and Twitter Card generation for social sharing, multi-language SEO with hreflang tags, URL redirect management with tracking, sitemap generation for standard, image, video, and news content, and content analysis with built-in quality scoring analyzers.
+
+## Shipping Labels
+
+A carrier-agnostic shipping label engine for Laravel. This package provides a LabelProvider contract, a Label model, and a driver registry so satellite packages (Shippo, EasyPost, USPS, ShipStation) can plug carrier drivers into any Laravel app. It is a peer package in the ArtisanPack UI ecosystem and is not tied to the ecommerce package.
 
 ## Specification
 
