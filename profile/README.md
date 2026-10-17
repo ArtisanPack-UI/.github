@@ -26,16 +26,18 @@ well as clicking through to their respective repositories.
 | Apple OAuth                   | [Learn More](#apple-oauth)                   | [View Repository](https://github.com/ArtisanPack-UI/apple-oauth)                   | 1.2.0   | 🟢 Live        |
 | Bing Places                   | [Learn More](#bing-places)                   | [View Repository](https://github.com/ArtisanPack-UI/bing-places)                   | 1.0.0   | 🟢 Live        |
 | Bookings                      | [Learn More](#bookings)                      | [View Repository](https://github.com/ArtisanPack-UI/bookings)                      | 1.2.2   | 🟢 Live        |
-| CMS Framework                 | [Learn More](#cms-framework)                 | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)                 | 2.13.0  | 🟢 Live        |
+| CMS Framework                 | [Learn More](#cms-framework)                 | [View Repository](https://github.com/ArtisanPack-UI/cms-framework)                 | 2.15.2  | 🟢 Live        |
 | Code Style                    | [Learn More](#code-style)                    | [View Repository](https://github.com/ArtisanPack-UI/code-style)                    | 1.2.0   | 🟢 Live        |
 | Code Style Pint               | [Learn More](#code-style-pint)               | [View Repository](https://github.com/ArtisanPack-UI/code-style-pint)               | 1.1.1   | 🟢 Live        |
 | Compliance                    | [Learn More](#compliance)                    | [View Repository](https://github.com/ArtisanPack-UI/compliance)                    | 1.1.0   | 🟢 Live        |
 | ConvertKit                    | [Learn More](#convertkit)                    | [View Repository](https://github.com/ArtisanPack-UI/convertkit)                    | 1.2.0   | 🟢 Live        |
 | Core                          | [Learn More](#core)                          | [View Repository](https://github.com/ArtisanPack-UI/core)                          | 1.3.1   | 🟢 Live        |
-| Ecommerce                     | [Learn More](#ecommerce)                     | [View Repository](https://github.com/ArtisanPack-UI/ecommerce)                     | 1.0.1   | 🟢 Live        |
+| Design System                 | [Learn More](#design-system)                 | [View Repository](https://github.com/ArtisanPack-UI/design-system)                 | Dev     | 🟡 In Progress |
+| Ecommerce                     | [Learn More](#ecommerce)                     | [View Repository](https://github.com/ArtisanPack-UI/ecommerce)                     | 1.1.0   | 🟢 Live        |
 | Ecommerce Admin Livewire      | [Learn More](#ecommerce-admin-livewire)      | [View Repository](https://github.com/ArtisanPack-UI/ecommerce-admin-livewire)      | 1.0.0   | 🟢 Live        |
-| Ecommerce Storefront Livewire | [Learn More](#ecommerce-storefront-livewire) | [View Repository](https://github.com/ArtisanPack-UI/ecommerce-storefront-livewire) | Dev     | 🟡 In Progress |
-| Forms                         | [Learn More](#forms)                         | [View Repository](https://github.com/ArtisanPack-UI/forms)                         | 1.5.0   | 🟢 Live        |
+| Ecommerce Kanban Livewire     | [Learn More](#ecommerce-kanban-livewire)     | [View Repository](https://github.com/ArtisanPack-UI/ecommerce-kanban-livewire)     | Dev     | 🟡 In Progress |
+| Ecommerce Storefront Livewire | [Learn More](#ecommerce-storefront-livewire) | [View Repository](https://github.com/ArtisanPack-UI/ecommerce-storefront-livewire) | 1.0.0   | 🟢 Live        |
+| Forms                         | [Learn More](#forms)                         | [View Repository](https://github.com/ArtisanPack-UI/forms)                         | 1.5.1   | 🟢 Live        |
 | Google                        | [Learn More](#google)                        | [View Repository](https://github.com/ArtisanPack-UI/google)                        | 1.3.0   | 🟢 Live        |
 | Google Ads                    | [Learn More](#google-ads)                    | [View Repository](https://github.com/ArtisanPack-UI/google-ads)                    | Dev     | 🔵 Backlog     |
 | Google Business Profile       | [Learn More](#google-business-profile)       | [View Repository](https://github.com/ArtisanPack-UI/google-business-profile)       | 1.0.0   | 🟢 Live        |
@@ -46,7 +48,7 @@ well as clicking through to their respective repositories.
 | Hooks - JS                    | [Learn More](#hooks---js)                    | [View Repository](https://github.com/ArtisanPack-UI/hooks-js)                      | 1.0.0   | 🟢 Live        |
 | Icons                         | [Learn More](#icons)                         | [View Repository](https://github.com/ArtisanPack-UI/icons)                         | 2.2.0   | 🟢 Live        |
 | Liquid Glass                  | [Learn More](#liquid-glass)                  | [View Repository](https://github.com/ArtisanPack-UI/liquid-glass)                  | Dev     | 🟡 In Progress |
-| Livewire Drag and Drop        | [Learn More](#livewire-drag-and-drop)        | [View Repository](https://github.com/ArtisanPack-UI/livewire-drag-and-drop)        | 2.0.1   | 🟢 Live        |
+| Livewire Drag and Drop        | [Learn More](#livewire-drag-and-drop)        | [View Repository](https://github.com/ArtisanPack-UI/livewire-drag-and-drop)        | 2.1.0   | 🟢 Live        |
 | Livewire Starter Kit          | [Learn More](#livewire-starter-kit)          | [View Repository](https://github.com/ArtisanPack-UI/livewire-starter-kit)          | 2.0.0   | 🟢 Live        |
 | Livewire UI Components        | [Learn More](#livewire-ui-components)        | [View Repository](https://github.com/ArtisanPack-UI/livewire-ui-components)        | 2.1.0   | 🟢 Live        |
 | Media Library                 | [Learn More](#media-library)                 | [View Repository](https://github.com/ArtisanPack-UI/media-library)                 | 1.5.0   | 🟢 Live        |
@@ -66,7 +68,7 @@ well as clicking through to their respective repositories.
 | SEO                           | [Learn More](#seo)                           | [View Repository](https://github.com/ArtisanPack-UI/seo)                           | 1.7.0   | 🟢 Live        |
 | Shipping Labels               | [Learn More](#shipping-labels)               | [View Repository](https://github.com/ArtisanPack-UI/shipping-labels)               | Dev     | 🟡 In Progress |
 | Specification                 | [Learn More](#specification)                 | [View Repository](https://github.com/ArtisanPack-UI/specification)                 | 1.0.0   | 🟢 Live        |
-| Visual Editor                 | [Learn More](#visual-editor)                 | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)                 | 1.13.0  | 🟢 Live        |
+| Visual Editor                 | [Learn More](#visual-editor)                 | [View Repository](https://github.com/ArtisanPack-UI/visual-editor)                 | 1.15.1  | 🟢 Live        |
 | Vue                           | [Learn More](#vue)                           | [View Repository](https://github.com/ArtisanPack-UI/vue)                           | 1.0.0   | 🟢 Live        |
 | Vue Starter Kit               | [Learn More](#vue-starter-kit)               | [View Repository](https://github.com/ArtisanPack-UI/vue-starter-kit)               | 2.0.0   | 🟢 Live        |
 
@@ -122,6 +124,10 @@ ConvertKit (Kit) integration for Laravel applications. This package provides an 
 
 The essential, foundational package that powers the entire ecosystem. It provides a suite of helpers and utilities designed to make your development workflow smoother and more efficient. This package serves as a core foundation for the ArtisanPack UI ecosystem, offering development helpers and utility functions to streamline developer workflows.
 
+## Design System
+
+The owned design system for ArtisanPack UI, replacing DaisyUI across the Livewire, React, and Vue component libraries. It provides W3C DTCG design tokens in three tiers (primitive, semantic, and component), a plain-CSS component layer with an optional Tailwind v4 preset, light, dark, high-contrast, and brand theme presets with a theme generator, per-part class overrides, and a headless mode. A shared component manifest keeps props, variants, slots, and events identical across all three stacks, and every component targets WCAG 2.2 AA.
+
 ## Ecommerce
 
 A headless commerce engine for Laravel that delivers WooCommerce-level features without the legacy baggage. This package provides the models, REST and GraphQL APIs, events, and hooks behind products, carts, checkout, orders, inventory, and payments, while the user interfaces ship as separate satellite packages so you can pair the engine with whichever frontend fits your project.
@@ -129,6 +135,10 @@ A headless commerce engine for Laravel that delivers WooCommerce-level features 
 ## Ecommerce Admin Livewire
 
 A Livewire admin for the ArtisanPack UI ecommerce engine. It provides management screens for products, orders, customers, promotions, tax, shipping, reports, and settings, along with a command palette, activity timelines, and internal notes, all built on the Livewire UI Components package.
+
+## Ecommerce Kanban Livewire
+
+A Livewire order kanban board for the ArtisanPack UI ecommerce engine. It provides accessible drag-and-drop boards organized by order sub-status, multiple boards with routing rules, card widgets, automations, filters, a card slide-out, and real-time sync via Laravel Echo and Reverb, all built on the Livewire UI Components package.
 
 ## Ecommerce Storefront Livewire
 
