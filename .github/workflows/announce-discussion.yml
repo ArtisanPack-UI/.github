@@ -22,6 +22,10 @@
 #
 # Each network posts from its own matrix job, so re-running a failed job
 # only retries the network that failed and never posts twice to the other.
+# The Bluesky post is written under a record key derived from the
+# discussion, so a re-run rewrites it rather than adding a second one;
+# Mastodon posts carry an Idempotency-Key (kept by Mastodon for about an
+# hour). A 429 is retried up to twice within the job.
 name: Announce new discussions
 
 on:
@@ -90,22 +94,82 @@ jobs:
               .replace(/[@#]/g, '$&\u200B')
               .replaceAll('://', ':\u200B//');
 
-          // Bluesky allows 300 graphemes; leave room for the headline and URL.
-          const graphemes = [...new Intl.Segmenter('en', { granularity: 'grapheme' }).segment(title)].map((part) => part.segment);
-          if (graphemes.length > 180) {
-              title = graphemes.slice(0, 179).join('').trimEnd() + '…';
+          // Bluesky allows 300 graphemes for the whole post. The URL always
+          // stays whole; the category is capped, and the title gets what's
+          // left (at most 180).
+          const LIMIT = 300;
+          const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
+          const split = (value) => [...segmenter.segment(value)].map((part) => part.segment);
+          const shorten = (value, budget) => {
+              const parts = split(value);
+              return parts.length <= budget ? value : parts.slice(0, Math.max(0, budget - 1)).join('').trimEnd() + '…';
+          };
+
+          const suffix = `\n\n${url}`;
+          const label = category ? shorten(category, 40) : '';
+          const prefix = label ? `💬 New discussion in ${label}: ` : '💬 New discussion: ';
+          const titleBudget = Math.min(180, LIMIT - split(prefix).length - split(suffix).length);
+
+          if (titleBudget < 2) {
+              throw new Error('The discussion URL leaves no room for a title within Bluesky\'s limit.');
           }
 
-          const headline = category ? `💬 New discussion in ${category}: ${title}` : `💬 New discussion: ${title}`;
-          const text = `${headline}\n\n${url}`;
+          title = shorten(title, titleBudget);
+          const text = `${prefix}${title}${suffix}`;
 
+          // GitHub's discussion id as a stable 10-bit number, for the record key.
+          const clockId = [...discussion.node_id].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) % 1024, 7);
+
+          // An AT Protocol TID (13 base32-sortable characters) built from the
+          // discussion's creation time and id rather than the clock, so a
+          // re-run writes the same Bluesky record instead of a second post.
+          function recordKey() {
+              const alphabet = '234567abcdefghijklmnopqrstuvwxyz';
+              const micros = BigInt(Date.parse(discussion.created_at) || 0) * 1000n;
+              let value = ((micros & ((1n << 53n) - 1n)) << 10n) | BigInt(clockId);
+              let key = '';
+              for (let index = 0; index < 13; index++) {
+                  key = alphabet[Number(value & 31n)] + key;
+                  value >>= 5n;
+              }
+              return key;
+          }
+
+          const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+          // Seconds to wait before retrying a 429, from Retry-After (seconds),
+          // Bluesky's RateLimit-Reset (Unix time) or Mastodon's
+          // X-RateLimit-Reset (ISO 8601), capped at a minute.
+          function retryDelay(response, attempt) {
+              const retryAfter = Number(response.headers.get('retry-after'));
+              const reset = response.headers.get('ratelimit-reset') ?? response.headers.get('x-ratelimit-reset');
+              const resetAt = reset === null ? NaN : (/^\d+$/.test(reset) ? Number(reset) * 1000 : Date.parse(reset));
+              const seconds = Number.isFinite(retryAfter) && retryAfter > 0
+                  ? retryAfter
+                  : (Number.isFinite(resetAt) ? (resetAt - Date.now()) / 1000 : 5 * 2 ** attempt);
+              return Math.min(60, Math.max(1, Math.ceil(seconds)));
+          }
+
+          // Only a 429 is retried (at most three attempts); any other failure
+          // fails the job at once.
           async function call(label, request) {
-              const response = await fetch(...request);
-              const body = await response.json().catch(() => ({}));
-              if (!response.ok) {
+              for (let attempt = 1; ; attempt++) {
+                  const response = await fetch(...request);
+                  const body = await response.json().catch(() => ({}));
+
+                  if (response.ok) {
+                      return body;
+                  }
+
+                  if (response.status === 429 && attempt < 3) {
+                      const delay = retryDelay(response, attempt);
+                      console.log(`${label} was rate limited; retrying in ${delay}s.`);
+                      await sleep(delay * 1000);
+                      continue;
+                  }
+
                   throw new Error(`${label} answered HTTP ${response.status}: ${body.message ?? body.error ?? ''}`);
               }
-              return body;
           }
 
           async function bluesky() {
@@ -120,16 +184,18 @@ jobs:
               const bytes = (value) => new TextEncoder().encode(value).length;
               const byteEnd = bytes(text);
 
-              const post = await call('Bluesky post', [`${xrpc}/com.atproto.repo.createRecord`, {
+              // putRecord under a fixed key: a re-run rewrites the same post.
+              const post = await call('Bluesky post', [`${xrpc}/com.atproto.repo.putRecord`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.accessJwt}` },
                   body: JSON.stringify({
                       repo: session.did,
                       collection: 'app.bsky.feed.post',
+                      rkey: recordKey(),
                       record: {
                           $type: 'app.bsky.feed.post',
                           text,
-                          createdAt: new Date().toISOString(),
+                          createdAt: new Date(Date.parse(discussion.created_at) || Date.now()).toISOString(),
                           langs: ['en'],
                           facets: [{
                               index: { byteStart: byteEnd - bytes(url), byteEnd },
