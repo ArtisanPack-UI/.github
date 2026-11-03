@@ -115,7 +115,7 @@ jobs:
           const tagLine = tags.map((tag) => `#${tag}`).join(' ');
           const suffix = `${tagLine ? `\n${tagLine}` : ''}\n\n${url}`;
           const label = category ? shorten(category, 40) : '';
-          const prefix = label ? `💬 New discussion in ${label}: ` : '💬 New discussion: ';
+          const prefix = label ? `New discussion in ${label}: ` : 'New discussion: ';
           const titleBudget = Math.min(180, LIMIT - split(prefix).length - split(suffix).length);
 
           if (titleBudget < 2) {
