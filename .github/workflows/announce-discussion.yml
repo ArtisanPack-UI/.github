@@ -19,6 +19,8 @@
 # the event payload from disk rather than through `${{ }}` interpolation,
 # so a title can't inject shell, and it defuses `@`, `#` and URLs so a
 # title can't mention anyone, join hashtags or bring its own link card.
+# The post's own hashtags (HASHTAGS) go on a line above the link, with a
+# `#tag` facet each on Bluesky.
 #
 # Each network posts from its own matrix job, so re-running a failed job
 # only retries the network that failed and never posts twice to the other.
@@ -50,6 +52,8 @@ jobs:
       ANNOUNCE_AUTHOR_ASSOCIATIONS: OWNER,MEMBER,COLLABORATOR
       # Categories that are never announced, comma-separated.
       SKIP_CATEGORIES: ''
+      # Hashtags added to every post, comma-separated, without the `#`.
+      HASHTAGS: Laravel,OpenSource
       BLUESKY_HANDLE: ${{ vars.BLUESKY_HANDLE }}
       BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
       MASTODON_INSTANCE_URL: ${{ vars.MASTODON_INSTANCE_URL }}
@@ -105,7 +109,11 @@ jobs:
               return parts.length <= budget ? value : parts.slice(0, Math.max(0, budget - 1)).join('').trimEnd() + '…';
           };
 
-          const suffix = `\n\n${url}`;
+          // Tags only: letters, digits and underscores, so one can't smuggle
+          // in a link or a mention.
+          const tags = env.HASHTAGS.split(',').map((tag) => tag.trim().replace(/^#/, '')).filter((tag) => /^\w+$/u.test(tag));
+          const tagLine = tags.map((tag) => `#${tag}`).join(' ');
+          const suffix = `${tagLine ? `\n${tagLine}` : ''}\n\n${url}`;
           const label = category ? shorten(category, 40) : '';
           const prefix = label ? `💬 New discussion in ${label}: ` : '💬 New discussion: ';
           const titleBudget = Math.min(180, LIMIT - split(prefix).length - split(suffix).length);
@@ -180,9 +188,30 @@ jobs:
                   body: JSON.stringify({ identifier: env.BLUESKY_HANDLE.replace(/^@/, ''), password: env.BLUESKY_APP_PASSWORD }),
               }]);
 
-              // Bluesky doesn't link URLs in post text itself: facet indexes are UTF-8 byte offsets.
+              // Bluesky doesn't link URLs or tags in post text itself: facet
+              // indexes are UTF-8 byte offsets.
               const bytes = (value) => new TextEncoder().encode(value).length;
               const byteEnd = bytes(text);
+
+              // The tags line sits right before the URL, after the (defused)
+              // title, so each tag is found from that line onwards.
+              function tagFacets() {
+                  if (!tagLine) {
+                      return [];
+                  }
+
+                  const lineStart = bytes(text.slice(0, text.lastIndexOf(tagLine)));
+                  let offset = lineStart;
+
+                  return tags.map((tag) => {
+                      const facet = {
+                          index: { byteStart: offset, byteEnd: offset + bytes(`#${tag}`) },
+                          features: [{ $type: 'app.bsky.richtext.facet#tag', tag }],
+                      };
+                      offset += bytes(`#${tag} `);
+                      return facet;
+                  });
+              }
 
               // putRecord under a fixed key: a re-run rewrites the same post.
               const post = await call('Bluesky post', [`${xrpc}/com.atproto.repo.putRecord`, {
@@ -197,10 +226,13 @@ jobs:
                           text,
                           createdAt: new Date(Date.parse(discussion.created_at) || Date.now()).toISOString(),
                           langs: ['en'],
-                          facets: [{
-                              index: { byteStart: byteEnd - bytes(url), byteEnd },
-                              features: [{ $type: 'app.bsky.richtext.facet#link', uri: url }],
-                          }],
+                          facets: [
+                              {
+                                  index: { byteStart: byteEnd - bytes(url), byteEnd },
+                                  features: [{ $type: 'app.bsky.richtext.facet#link', uri: url }],
+                              },
+                              ...tagFacets(),
+                          ],
                           embed: {
                               $type: 'app.bsky.embed.external',
                               external: { uri: url, title, description: 'Join the discussion on GitHub' },
