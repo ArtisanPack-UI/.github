@@ -1,0 +1,184 @@
+# Posts each new org discussion to the ArtisanPack UI Bluesky and Mastodon
+# accounts.
+#
+# Org discussions live in this repository, so `discussion: created` fires
+# for every new one. Release announcements are posted by the website
+# plugin's GitHub webhook instead (artisanpack-ui-website-plugin).
+#
+# Configure on the org (Settings → Secrets and variables → Actions) or on
+# this repo. A network with anything missing is skipped:
+#   vars.BLUESKY_HANDLE           e.g. artisanpackui.bsky.social
+#   secrets.BLUESKY_APP_PASSWORD  an app password, never the account password
+#   vars.MASTODON_INSTANCE_URL    e.g. https://phpc.social
+#   secrets.MASTODON_ACCESS_TOKEN a token with the write:statuses scope
+#
+# The repo is public, so anyone can open a discussion. Only discussions by
+# the authors in ANNOUNCE_AUTHOR_ASSOCIATIONS are posted (org owners,
+# members and collaborators by default), so a spammer can't make the org
+# accounts post. The title is still treated as untrusted: the script reads
+# the event payload from disk rather than through `${{ }}` interpolation,
+# so a title can't inject shell, and it defuses `@`, `#` and URLs so a
+# title can't mention anyone, join hashtags or bring its own link card.
+#
+# Each network posts from its own matrix job, so re-running a failed job
+# only retries the network that failed and never posts twice to the other.
+name: Announce new discussions
+
+on:
+  discussion:
+    types: [created]
+
+permissions: {}
+
+jobs:
+  announce:
+    name: Post to ${{ matrix.network }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        network: [Bluesky, Mastodon]
+    env:
+      NETWORK: ${{ matrix.network }}
+      # Author associations whose discussions are posted, comma-separated.
+      # Leave empty to post every discussion.
+      ANNOUNCE_AUTHOR_ASSOCIATIONS: OWNER,MEMBER,COLLABORATOR
+      # Categories that are never announced, comma-separated.
+      SKIP_CATEGORIES: ''
+      BLUESKY_HANDLE: ${{ vars.BLUESKY_HANDLE }}
+      BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+      MASTODON_INSTANCE_URL: ${{ vars.MASTODON_INSTANCE_URL }}
+      MASTODON_ACCESS_TOKEN: ${{ secrets.MASTODON_ACCESS_TOKEN }}
+    steps:
+      - name: Post the discussion
+        run: |
+          node --input-type=module <<'SCRIPT'
+          import { readFileSync } from 'node:fs';
+
+          const { discussion } = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+          const env = process.env;
+
+          const list = (value) => value.split(',').map((item) => item.trim().toLowerCase()).filter(Boolean);
+          const authors = list(env.ANNOUNCE_AUTHOR_ASSOCIATIONS);
+          const association = (discussion.author_association ?? '').toLowerCase();
+
+          if (authors.length > 0 && !authors.includes(association)) {
+              console.log(`Skipping a discussion by an author with the "${association || 'unknown'}" association.`);
+              process.exit(0);
+          }
+
+          const skip = list(env.SKIP_CATEGORIES);
+          const category = discussion.category?.name ?? '';
+
+          if (skip.includes(category.toLowerCase())) {
+              console.log(`Skipping a discussion in the "${category}" category.`);
+              process.exit(0);
+          }
+
+          const url = discussion.html_url;
+
+          if (!url?.startsWith('https://github.com/')) {
+              throw new Error('The discussion has no GitHub URL.');
+          }
+
+          // Defuse mentions, hashtags and links: a zero-width space after `@`
+          // and `#`, and in `://`, stops Mastodon linking them.
+          let title = discussion.title
+              .replace(/\s+/g, ' ')
+              .trim()
+              .replace(/[@#]/g, '$&\u200B')
+              .replaceAll('://', ':\u200B//');
+
+          // Bluesky allows 300 graphemes; leave room for the headline and URL.
+          const graphemes = [...new Intl.Segmenter('en', { granularity: 'grapheme' }).segment(title)].map((part) => part.segment);
+          if (graphemes.length > 180) {
+              title = graphemes.slice(0, 179).join('').trimEnd() + '…';
+          }
+
+          const headline = category ? `💬 New discussion in ${category}: ${title}` : `💬 New discussion: ${title}`;
+          const text = `${headline}\n\n${url}`;
+
+          async function call(label, request) {
+              const response = await fetch(...request);
+              const body = await response.json().catch(() => ({}));
+              if (!response.ok) {
+                  throw new Error(`${label} answered HTTP ${response.status}: ${body.message ?? body.error ?? ''}`);
+              }
+              return body;
+          }
+
+          async function bluesky() {
+              const xrpc = 'https://bsky.social/xrpc';
+              const session = await call('Bluesky sign-in', [`${xrpc}/com.atproto.server.createSession`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ identifier: env.BLUESKY_HANDLE.replace(/^@/, ''), password: env.BLUESKY_APP_PASSWORD }),
+              }]);
+
+              // Bluesky doesn't link URLs in post text itself: facet indexes are UTF-8 byte offsets.
+              const bytes = (value) => new TextEncoder().encode(value).length;
+              const byteEnd = bytes(text);
+
+              const post = await call('Bluesky post', [`${xrpc}/com.atproto.repo.createRecord`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.accessJwt}` },
+                  body: JSON.stringify({
+                      repo: session.did,
+                      collection: 'app.bsky.feed.post',
+                      record: {
+                          $type: 'app.bsky.feed.post',
+                          text,
+                          createdAt: new Date().toISOString(),
+                          langs: ['en'],
+                          facets: [{
+                              index: { byteStart: byteEnd - bytes(url), byteEnd },
+                              features: [{ $type: 'app.bsky.richtext.facet#link', uri: url }],
+                          }],
+                          embed: {
+                              $type: 'app.bsky.embed.external',
+                              external: { uri: url, title, description: 'Join the discussion on GitHub' },
+                          },
+                      },
+                  }),
+              }]);
+
+              console.log(`Posted to Bluesky: ${post.uri}`);
+          }
+
+          async function mastodon() {
+              const instance = env.MASTODON_INSTANCE_URL.replace(/\/+$/, '');
+              if (!instance.startsWith('https://')) {
+                  throw new Error('MASTODON_INSTANCE_URL must be an https URL.');
+              }
+
+              const status = await call('Mastodon post', [`${instance}/api/v1/statuses`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${env.MASTODON_ACCESS_TOKEN}`,
+                      'Idempotency-Key': `artisanpack-ui-discussion-${discussion.node_id}`,
+                  },
+                  body: JSON.stringify({ status: text, visibility: 'public', language: 'en' }),
+              }]);
+
+              console.log(`Posted to Mastodon: ${status.url}`);
+          }
+
+          const configured = {
+              Bluesky: Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD),
+              Mastodon: Boolean(env.MASTODON_INSTANCE_URL && env.MASTODON_ACCESS_TOKEN),
+          };
+
+          if (!configured[env.NETWORK]) {
+              console.log(`::notice::${env.NETWORK} isn't configured; nothing was posted there.`);
+              process.exit(0);
+          }
+
+          try {
+              await (env.NETWORK === 'Bluesky' ? bluesky() : mastodon());
+          } catch (error) {
+              console.log(`::error::${env.NETWORK}: ${error.message}`);
+              process.exit(1);
+          }
+          SCRIPT
