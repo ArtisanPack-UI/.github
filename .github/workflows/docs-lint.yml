@@ -1,0 +1,43 @@
+name: Docs lint
+
+on:
+  workflow_call:
+    inputs:
+      archetype:
+        description: 'Docs archetype: package, component-library, starter-kit or meta.'
+        type: string
+        default: package
+      docs-path:
+        description: 'Path to the docs folder, relative to the repo root.'
+        type: string
+        default: docs
+      linter-ref:
+        description: 'Ref of ArtisanPack-UI/.github to load the linter from.'
+        type: string
+        default: main
+
+jobs:
+  docs-lint:
+    name: Lint docs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the package
+        uses: actions/checkout@v4
+
+      - name: Check out the docs linter
+        uses: actions/checkout@v4
+        with:
+          repository: ArtisanPack-UI/.github
+          ref: ${{ inputs.linter-ref }}
+          path: .docs-lint
+          sparse-checkout: scripts
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Lint docs against DOCS_STANDARD.md
+        run: node .docs-lint/scripts/docs-lint.mjs "${{ inputs.docs-path }}" --archetype="${{ inputs.archetype }}"
