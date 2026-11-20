@@ -39,6 +39,16 @@ const STANDARD_SLOTS = {
 	troubleshooting: 99,
 };
 
+/**
+ * Extra fixed slots for some archetypes.
+ */
+const ARCHETYPE_SLOTS = {
+	package: {},
+	'component-library': { components: 40 },
+	'starter-kit': {},
+	meta: {},
+};
+
 const PACKAGE_SPECIFIC_RANGE = [ 40, 79 ];
 
 const REQUIRED_PAGES = {
@@ -62,6 +72,9 @@ const RENAMED_TOP_LEVEL_PAGES = {
 };
 
 const ALERT = /^\s{0,3}>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i;
+
+const OPENING_FENCE = /^\s{0,3}(`{3,}|~{3,})(.*)$/;
+const CLOSING_FENCE = /^\s{0,3}(`{3,}|~{3,})[ \t]*$/;
 
 const args         = process.argv.slice( 2 );
 const archetypeArg = args.find( ( arg ) => arg.startsWith( '--archetype=' ) );
@@ -117,6 +130,49 @@ function walk( directory ) {
 }
 
 /**
+ * Decode a URL-encoded link target without throwing on malformed escapes like "100%".
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+function safeDecode( value ) {
+	try {
+		return decodeURI( value );
+	} catch {
+		return value;
+	}
+}
+
+/**
+ * Read a YAML scalar: unwrap quotes, or drop a trailing comment from a plain value.
+ *
+ * @param {string} raw
+ * @returns {string}
+ */
+function parseScalar( raw ) {
+	const value = raw.trim();
+	const quote = value[0];
+
+	if ( '"' === quote || "'" === quote ) {
+		const end = value.indexOf( quote, 1 );
+
+		return -1 === end ? value.slice( 1 ) : value.slice( 1, end );
+	}
+
+	return value.replace( /\s+#.*$/, '' ).trim();
+}
+
+/**
+ * Normalize heading or title text for comparison, ignoring inline-code backticks.
+ *
+ * @param {string} text
+ * @returns {string}
+ */
+function headingText( text ) {
+	return text.replace( /`/g, '' ).replace( /\s+/g, ' ' ).trim();
+}
+
+/**
  * Split a page into its front matter fields and body lines.
  *
  * @param {string} content
@@ -141,7 +197,7 @@ function parsePage( content ) {
 		const match = line.match( /^\s*([A-Za-z0-9_-]+)\s*:\s*(.*)$/ );
 
 		if ( match ) {
-			frontMatter[ match[1].toLowerCase() ] = match[2].trim().replace( /^["']|["']$/g, '' );
+			frontMatter[ match[1].toLowerCase() ] = parseScalar( match[2] );
 		}
 	}
 
@@ -187,34 +243,33 @@ function lintPage( file ) {
 
 	body.forEach( ( rawLine, index ) => {
 		const lineNumber = bodyStart + index;
-		const fenceMatch = rawLine.match( /^\s{0,3}(`{3,}|~{3,})\s*([^\s`]*)/ );
 
-		if ( fenceMatch ) {
-			if ( null === fence ) {
-				fence = fenceMatch[1];
+		if ( null !== fence ) {
+			const closing = rawLine.match( CLOSING_FENCE );
 
-				if ( '' === fenceMatch[2] ) {
-					report( 'error', file, 'Code block has no language. Tag it (use `text` for plain output).', lineNumber );
-				}
-
-				return;
-			}
-
-			if ( fenceMatch[1][0] === fence[0] && fenceMatch[1].length >= fence.length && '' === fenceMatch[2] ) {
+			if ( closing && closing[1][0] === fence[0] && closing[1].length >= fence.length ) {
 				fence = null;
 			}
 
 			return;
 		}
 
-		if ( null !== fence ) {
+		const opening = rawLine.match( OPENING_FENCE );
+
+		if ( opening && ! ( '`' === opening[1][0] && opening[2].includes( '`' ) ) ) {
+			fence = opening[1];
+
+			if ( '' === opening[2].trim() ) {
+				report( 'error', file, 'Code block has no language. Tag it (use `text` for plain output).', lineNumber );
+			}
+
 			return;
 		}
 
 		const line = rawLine.replace( /`[^`]*`/g, ( code ) => ' '.repeat( code.length ) );
 
 		if ( /^#\s+/.test( line ) ) {
-			headings.push( { text: line.replace( /^#\s+/, '' ).replace( /\s+#*\s*$/, '' ).trim(), lineNumber } );
+			headings.push( { text: headingText( rawLine.replace( /^#\s+/, '' ).replace( /\s+#*\s*$/, '' ) ), lineNumber } );
 		}
 
 		if ( ALERT.test( line ) ) {
@@ -228,6 +283,13 @@ function lintPage( file ) {
 		for ( const match of line.matchAll( /(!?)\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)/g ) ) {
 			lintLink( file, match[2], '!' === match[1], lineNumber );
 		}
+
+		const definition = line.match( /^\s{0,3}\[[^\]^][^\]]*\]:[ \t]*<?([^\s>]+)>?/ );
+
+		if ( definition ) {
+			const isImage = IMAGE_EXTENSIONS.includes( extname( safeDecode( definition[1].split( /[#?]/ )[0] ) ).toLowerCase() );
+			lintLink( file, definition[1], isImage, lineNumber );
+		}
 	} );
 
 	if ( 0 === headings.length ) {
@@ -237,7 +299,7 @@ function lintPage( file ) {
 			report( 'error', file, 'Page has more than one H1. Use `##` for sections.', heading.lineNumber );
 		} );
 
-		if ( title && headings[0].text !== title ) {
+		if ( title && headings[0].text !== headingText( title ) ) {
 			report( 'error', file, `H1 "${ headings[0].text }" does not match the title "${ title }".`, headings[0].lineNumber );
 		}
 	}
@@ -264,7 +326,7 @@ function lintLink( file, target, isImage, lineNumber ) {
 		return;
 	}
 
-	const path = decodeURI( target.split( /[#?]/ )[0] );
+	const path = safeDecode( target.split( /[#?]/ )[0] );
 
 	if ( '' === path ) {
 		return;
@@ -413,6 +475,7 @@ function lint() {
 	}
 
 	const siblings = new Map();
+	const slots    = { ...STANDARD_SLOTS, ...ARCHETYPE_SLOTS[ archetype ] };
 
 	for ( const [ path, page ] of pages ) {
 		if ( null === page.menuOrder ) {
@@ -420,7 +483,7 @@ function lint() {
 		}
 
 		if ( page.topLevel ) {
-			const slot = STANDARD_SLOTS[ page.stem ];
+			const slot = slots[ page.stem ];
 
 			if ( undefined !== slot && page.menuOrder !== slot ) {
 				report( 'error', path, `${ page.stem }.md must use menu_order: ${ slot }.`, 1 );

@@ -231,7 +231,7 @@ The docs-lint workflow checks every pull request that touches `docs/`. It report
 
 ### Adding it to a package
 
-In the package repo, go to **Actions → New workflow** and choose **Docs lint** under "By ArtisanPack-UI". Or copy [`workflow-templates/docs-lint.yml`](workflow-templates/docs-lint.yml) to `.github/workflows/docs-lint.yml`. Then set `archetype` if the package isn't a standard `package`:
+In the package repo, go to **Actions → New workflow** and choose **Docs lint** under "By ArtisanPack-UI". Or copy [`workflow-templates/docs-lint.yml`](workflow-templates/docs-lint.yml) to `.github/workflows/docs-lint.yml` and replace `$default-branch` with the repo's default branch (usually `main`). GitHub only fills that placeholder in when you use **New workflow**. Then set `archetype` if the package isn't a standard `package`:
 
 ```yaml
 jobs:
@@ -262,17 +262,19 @@ node docs-migrate.mjs docs            # dry run
 node docs-migrate.mjs docs --write    # apply
 ```
 
+Pass `--archetype=component-library` (or `starter-kit`, `meta`) when it applies, so slots like `components` at 40 are kept free.
+
 It does the following:
 
 - moves internal folders to `.planning/`
 - renames files and folders to kebab-case and the standard names
-- merges duplicate landing pages, keeping the copy the site actually published
+- merges duplicate landing pages, keeping the copy the site actually published (drafts, hidden pages and `.docsignore` matches never win), and points links at the page it kept
 - rewrites wiki-style and moved links to relative `.md` links, and links to source files to GitHub URLs
 - adds `redirect_from` for every slug that changes
 - sets `title`, `menu_order` and a matching H1, ordering pages the way the home and section pages link to them
 - demotes extra H1s, tags untagged code blocks with a best-guess language and converts GitHub alerts
 
-It never writes new content. Afterwards:
+It never writes new content. It keeps `.docsignore` and adds renamed pages to it, refuses to run on the repo root or a `docs/` with symbolic links, and won't overwrite existing files in `.planning/`. Removed files that git doesn't track go to `.planning/removed-docs/` rather than being deleted. Afterwards:
 
 1. Review the diff, especially the guessed code block languages, the reordered sidebar and any pages the script reports it dropped or left in place.
 2. Fix whatever `docs-lint.mjs` still reports: links it couldn't resolve, missing landing and required pages, changelogs or contributor docs inside `docs/`, per-version upgrade pages to fold into `upgrading.md`, and similar.

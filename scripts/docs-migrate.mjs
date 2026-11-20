@@ -19,17 +19,22 @@
  *   - demotes extra H1s, tags untagged code blocks, converts GitHub alerts
  *
  * Usage:
- *   node docs-migrate.mjs [docs-path]            # dry run: print the plan
- *   node docs-migrate.mjs [docs-path] --write    # apply it
+ *   node docs-migrate.mjs [docs-path] [--archetype=...]            # dry run: print the plan
+ *   node docs-migrate.mjs [docs-path] [--archetype=...] --write    # apply it
  *
  * @since 1.0.0
  */
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join, posix, relative, resolve, sep } from 'node:path';
 
 const INTERNAL_DIRECTORIES = [ 'plans', 'audits', 'design', 'benchmarks', 'decisions', 'notes', 'drafts' ];
+
+/**
+ * Folders the docs site importer never publishes (GitHubDocsService::IGNORED_DIRS).
+ */
+const IMPORTER_IGNORED_DIRECTORIES = [ 'plans', 'design', 'benchmarks', 'node_modules', 'vendor', '.git' ];
 
 const IMAGE_EXTENSIONS = [ '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.avif' ];
 
@@ -59,6 +64,16 @@ const STANDARD_SLOTS = {
 	troubleshooting: 99,
 };
 
+/**
+ * Extra fixed slots for some archetypes.
+ */
+const ARCHETYPE_SLOTS = {
+	package: {},
+	'component-library': { components: 40 },
+	'starter-kit': {},
+	meta: {},
+};
+
 const STANDARD_TITLES = {
 	home: 'Overview',
 	'getting-started': 'Getting Started',
@@ -73,10 +88,16 @@ const ALERT_LABELS = {
 	CAUTION: 'Warning',
 };
 
-const args     = process.argv.slice( 2 );
-const write    = args.includes( '--write' );
-const docsPath = resolve( args.find( ( arg ) => ! arg.startsWith( '--' ) ) ?? 'docs' );
-const repoRoot = dirname( docsPath );
+const OPENING_FENCE = /^(\s{0,3})(`{3,}|~{3,})(.*)$/;
+const CLOSING_FENCE = /^\s{0,3}(`{3,}|~{3,})[ \t]*$/;
+
+const args         = process.argv.slice( 2 );
+const write        = args.includes( '--write' );
+const archetypeArg = args.find( ( arg ) => arg.startsWith( '--archetype=' ) );
+const archetype    = archetypeArg ? archetypeArg.split( '=' )[1] : 'package';
+const docsPath     = resolve( args.find( ( arg ) => ! arg.startsWith( '--' ) ) ?? 'docs' );
+const repoRoot     = dirname( docsPath );
+const slots        = { ...STANDARD_SLOTS, ...( ARCHETYPE_SLOTS[ archetype ] ?? {} ) };
 
 const notes = [];
 
@@ -101,7 +122,18 @@ function note( message ) {
 }
 
 /**
- * Convert any name to kebab-case.
+ * Stop with an error message.
+ *
+ * @param {string} message
+ * @param {number} code
+ */
+function fail( message, code = 2 ) {
+	console.error( message );
+	process.exit( code );
+}
+
+/**
+ * Convert any name to a kebab-case file name.
  *
  * @param {string} name
  * @returns {string}
@@ -117,6 +149,18 @@ function kebab( name ) {
 }
 
 /**
+ * Convert a path segment to a slug segment exactly as the docs site does (GitHubDocsService::toKebab()).
+ *
+ * Unlike kebab(), this doesn't split camelCase: the site publishes UsageGuide.md as "usageguide".
+ *
+ * @param {string} segment
+ * @returns {string}
+ */
+function siteKebab( segment ) {
+	return segment.trim().replace( /[\s_]+/g, '-' ).replace( /-+/g, '-' ).replace( /^-+|-+$/g, '' ).toLowerCase();
+}
+
+/**
  * Normalize a slug or link target the way the docs site importer does.
  *
  * @param {string} value
@@ -124,6 +168,65 @@ function kebab( name ) {
  */
 function normalizeTarget( value ) {
 	return value.trim().replace( /[\s_/]+/g, '-' ).replace( /-+/g, '-' ).replace( /^-|-$/g, '' ).toLowerCase();
+}
+
+/**
+ * Decode a URL-encoded link target without throwing on malformed escapes like "100%".
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+function safeDecode( value ) {
+	try {
+		return decodeURI( value );
+	} catch {
+		return value;
+	}
+}
+
+/**
+ * Escape a string for use in a regular expression.
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeRegExp( value ) {
+	return value.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
+}
+
+/**
+ * Read a YAML scalar: unwrap quotes, or drop a trailing comment from a plain value.
+ *
+ * @param {string} raw
+ * @returns {string}
+ */
+function parseScalar( raw ) {
+	const value = raw.trim();
+	const quote = value[0];
+
+	if ( '"' === quote || "'" === quote ) {
+		const end = value.indexOf( quote, 1 );
+
+		return -1 === end ? value.slice( 1 ) : value.slice( 1, end );
+	}
+
+	return value.replace( /\s+#.*$/, '' ).trim();
+}
+
+/**
+ * GitHub's anchor for a heading.
+ *
+ * @param {string} text
+ * @returns {string}
+ */
+function githubAnchor( text ) {
+	return text
+		.replace( /\[([^\]]*)\]\([^)]*\)/g, '$1' )
+		.replace( /<[^>]+>/g, '' )
+		.trim()
+		.toLowerCase()
+		.replace( /[^\p{L}\p{N}\p{M}\s_-]/gu, '' )
+		.replace( /\s/g, '-' );
 }
 
 /**
@@ -163,30 +266,126 @@ function importerSlug( relativePath ) {
 	if ( [ 'index', 'readme' ].includes( base.toLowerCase() ) ) {
 		slugSegments = directories;
 		rank         = 3;
-	} else if ( 2 <= segments.length && kebab( segments[ segments.length - 2 ] ) === kebab( base ) ) {
+	} else if ( 2 <= segments.length && siteKebab( segments[ segments.length - 2 ] ) === siteKebab( base ) ) {
 		slugSegments = directories;
 		rank         = 2;
 	}
 
-	return { slug: slugSegments.map( kebab ).join( '/' ) || 'home', rank };
+	return { slug: slugSegments.map( siteKebab ).join( '/' ) || 'home', rank };
+}
+
+/**
+ * Turn a gitignore-style glob into a regular expression with PHP fnmatch() semantics (no FNM_PATHNAME).
+ *
+ * @param {string} pattern
+ * @returns {RegExp}
+ */
+function globToRegExp( pattern ) {
+	let source = '';
+
+	for ( let index = 0; index < pattern.length; index++ ) {
+		const character = pattern[ index ];
+
+		if ( '*' === character ) {
+			source += '.*';
+		} else if ( '?' === character ) {
+			source += '.';
+		} else if ( '[' === character && pattern.indexOf( ']', index + 1 ) > index ) {
+			const end   = pattern.indexOf( ']', index + 1 );
+			const inner = pattern.slice( index + 1, end ).replace( /^!/, '^' ).replace( /\\/g, '\\\\' );
+			source     += `[${ inner }]`;
+			index       = end;
+		} else {
+			source += escapeRegExp( character );
+		}
+	}
+
+	return new RegExp( `^${ source }$` );
+}
+
+/**
+ * Read .docsignore patterns the way the docs site does.
+ *
+ * @returns {string[]}
+ */
+function readDocsIgnore() {
+	const file = join( docsPath, '.docsignore' );
+
+	if ( ! existsSync( file ) ) {
+		return [];
+	}
+
+	return readFileSync( file, 'utf8' ).split( /\r?\n/ ).map( ( line ) => line.trim() ).filter( ( line ) => '' !== line && ! line.startsWith( '#' ) );
+}
+
+/**
+ * Whether a docs-relative path matches a .docsignore pattern (GitHubDocsService::matchesIgnorePattern()).
+ *
+ * @param {string}   relativePath
+ * @param {string[]} patterns
+ * @returns {boolean}
+ */
+function matchesDocsIgnore( relativePath, patterns ) {
+	const base = posix.basename( relativePath );
+
+	return patterns.some( ( pattern ) => {
+		if ( pattern.endsWith( '/' ) ) {
+			const directory = pattern.replace( /\/+$/, '' );
+
+			return relativePath.startsWith( `${ directory }/` ) || posix.dirname( relativePath ).split( '/' ).includes( directory );
+		}
+
+		const regex = globToRegExp( pattern );
+
+		return regex.test( relativePath ) || regex.test( base );
+	} );
+}
+
+/**
+ * Front matter as the docs site reads it (GitHubDocsService::parseFrontMatter()), without YAML comment handling.
+ *
+ * @param {string} content
+ * @returns {Record<string, string>}
+ */
+function importerFrontMatter( content ) {
+	const match = content.match( /^---\s*\n([\s\S]*?)\n---\s*\n/ );
+	const data  = {};
+
+	if ( match ) {
+		for ( const line of match[1].split( '\n' ) ) {
+			const pair = line.match( /^\s*([A-Za-z0-9_-]+)\s*:\s*(.*)$/ );
+
+			if ( pair ) {
+				data[ pair[1].trim().toLowerCase() ] = pair[2].replace( /^[\s"']+|[\s"']+$/g, '' );
+			}
+		}
+	}
+
+	return data;
 }
 
 /**
  * List every file under a folder as POSIX paths relative to the docs folder.
  *
- * @param {string} directory
+ * Symbolic links are never followed; they're collected separately.
+ *
+ * @param {string}   directory
+ * @param {string[]} symlinks
  * @returns {string[]}
  */
-function listFiles( directory ) {
+function listFiles( directory, symlinks ) {
 	const files = [];
 
-	for ( const name of readdirSync( directory ).sort() ) {
-		const path = join( directory, name );
+	for ( const entry of readdirSync( directory, { withFileTypes: true } ).sort( ( a, b ) => a.name.localeCompare( b.name ) ) ) {
+		const path         = join( directory, entry.name );
+		const relativePath = relative( docsPath, path ).split( sep ).join( '/' );
 
-		if ( statSync( path ).isDirectory() ) {
-			files.push( ...listFiles( path ) );
+		if ( entry.isSymbolicLink() ) {
+			symlinks.push( relativePath );
+		} else if ( entry.isDirectory() ) {
+			files.push( ...listFiles( path, symlinks ) );
 		} else {
-			files.push( relative( docsPath, path ).split( sep ).join( '/' ) );
+			files.push( relativePath );
 		}
 	}
 
@@ -228,6 +427,9 @@ function targetPath( oldPath ) {
 		stem        = directories.pop();
 		directories = directories.slice();
 		landing     = true;
+	} else if ( 0 === directories.length && [ 'index', 'readme' ].includes( stem ) ) {
+		stem    = 'home';
+		landing = true;
 	}
 
 	if ( 0 === directories.length && TOP_LEVEL_RENAMES[ stem ] ) {
@@ -245,7 +447,7 @@ function targetPath( oldPath ) {
  */
 function splitPage( content ) {
 	const normalized = content.replace( /\r\n/g, '\n' );
-	const match      = normalized.match( /^---\s*\n([\s\S]*?)\n---\s*\n?/ );
+	const match      = normalized.match( /^---[ \t]*\n([\s\S]*?)\n---[ \t]*(?:\n|$)/ );
 
 	if ( ! match ) {
 		return { fields: [], body: normalized };
@@ -257,7 +459,7 @@ function splitPage( content ) {
 		const pair = line.match( /^\s*([A-Za-z0-9_-]+)\s*:\s*(.*)$/ );
 
 		if ( pair ) {
-			fields.push( [ pair[1].toLowerCase(), pair[2].trim().replace( /^["']|["']$/g, '' ) ] );
+			fields.push( [ pair[1].toLowerCase(), parseScalar( pair[2] ) ] );
 		}
 	}
 
@@ -334,20 +536,100 @@ function humanize( stem ) {
 }
 
 /**
+ * Refuse to run against anything that isn't a docs folder inside a repository.
+ */
+function assertDocsFolder() {
+	if ( ! ARCHETYPE_SLOTS[ archetype ] ) {
+		fail( `Unknown archetype "${ archetype }". Use one of: ${ Object.keys( ARCHETYPE_SLOTS ).join( ', ' ) }.` );
+	}
+
+	if ( ! existsSync( docsPath ) || ! lstatSync( docsPath ).isDirectory() ) {
+		fail( `No docs folder at ${ docsPath }.` );
+	}
+
+	let worktree = null;
+
+	try {
+		worktree = execFileSync( 'git', [ '-C', docsPath, 'rev-parse', '--show-toplevel' ], { encoding: 'utf8', stdio: [ 'ignore', 'pipe', 'ignore' ] } ).trim();
+	} catch {
+		// Not a git checkout; fall back to the .git check below.
+	}
+
+	if ( existsSync( join( docsPath, '.git' ) ) || ( worktree && realpathSync( worktree ) === realpathSync( docsPath ) ) ) {
+		fail( `${ docsPath } is the repository root. Pass the docs folder instead (usually "docs").` );
+	}
+}
+
+/**
+ * Files git tracks under the docs folder, relative to it.
+ *
+ * @returns {Set<string>}
+ */
+function trackedFiles() {
+	try {
+		return new Set( execFileSync( 'git', [ '-C', docsPath, 'ls-files', '-z' ], { encoding: 'utf8', stdio: [ 'ignore', 'pipe', 'ignore' ] } ).split( '\0' ).filter( Boolean ) );
+	} catch {
+		return new Set();
+	}
+}
+
+/**
  * Build the migration plan and apply it when --write is set.
  */
 function migrate() {
-	if ( ! existsSync( docsPath ) ) {
-		console.error( `No docs folder at ${ docsPath }.` );
-		process.exit( 2 );
+	assertDocsFolder();
+
+	const symlinks       = [];
+	const allFiles       = listFiles( docsPath, symlinks );
+	const oldFiles       = allFiles.filter( ( file ) => ! /^[._]/.test( posix.basename( file ) ) );
+	const pageFiles      = oldFiles.filter( ( file ) => file.toLowerCase().endsWith( '.md' ) );
+	const ignorePatterns = readDocsIgnore();
+	const hasDocsIgnore  = allFiles.includes( '.docsignore' );
+	const leftovers      = allFiles.filter( ( file ) => ! oldFiles.includes( file ) && '.docsignore' !== file );
+	const fatal          = [];
+
+	for ( const link of symlinks ) {
+		note( `${ link } is a symbolic link. The script doesn't follow or move links; replace it with real files first.` );
 	}
 
-	const oldFiles  = listFiles( docsPath ).filter( ( file ) => ! basename( file ).startsWith( '.' ) );
-	const pageFiles = oldFiles.filter( ( file ) => file.toLowerCase().endsWith( '.md' ) );
+	if ( write && 0 < symlinks.length ) {
+		fatal.push( `docs/ contains symbolic links (${ symlinks.join( ', ' ) }). Replace them with real files and run again.` );
+	}
 
-	const published = new Map();
+	/**
+	 * Whether the docs site would publish a page (GitHubDocsService::shouldIgnore() and the draft/hidden check).
+	 *
+	 * @param {string} file
+	 * @returns {boolean}
+	 */
+	const isPublishable = ( file ) => {
+		const segments = file.split( '/' );
+
+		if ( /^[._]/.test( segments[ segments.length - 1 ] ) ) {
+			return false;
+		}
+
+		if ( segments.slice( 0, -1 ).some( ( segment ) => IMPORTER_IGNORED_DIRECTORIES.includes( segment.toLowerCase() ) ) ) {
+			return false;
+		}
+
+		if ( matchesDocsIgnore( file, ignorePatterns ) ) {
+			return false;
+		}
+
+		const frontMatter = importerFrontMatter( readFileSync( join( docsPath, file ), 'utf8' ) );
+
+		return ! [ frontMatter.draft, frontMatter.hidden ].some( ( value ) => [ 'true', '1', 'yes', 'on' ].includes( ( value ?? '' ).toLowerCase() ) );
+	};
+
+	const publishable = new Set( pageFiles.filter( isPublishable ) );
+	const published   = new Map();
 
 	for ( const file of pageFiles ) {
+		if ( ! publishable.has( file ) ) {
+			continue;
+		}
+
 		const { slug, rank } = importerSlug( file );
 
 		if ( ! published.has( slug ) || rank > published.get( slug ).rank ) {
@@ -363,11 +645,20 @@ function migrate() {
 		}
 	}
 
-	const moves   = new Map();
-	const claimed = new Map();
-	const dropped = [];
+	const isPublishedWinner = ( file ) => file.toLowerCase().endsWith( '.md' ) && published.get( importerSlug( file ).slug )?.file === file;
+
+	const moves         = new Map();
+	const claimed       = new Map();
+	const droppedWinner = new Map();
 
 	const ordered = [ ...oldFiles ].sort( ( a, b ) => {
+		const winnerA = isPublishedWinner( a ) ? 1 : 0;
+		const winnerB = isPublishedWinner( b ) ? 1 : 0;
+
+		if ( winnerA !== winnerB ) {
+			return winnerB - winnerA;
+		}
+
 		const rankA = a.endsWith( '.md' ) ? importerSlug( a ).rank : 0;
 		const rankB = b.endsWith( '.md' ) ? importerSlug( b ).rank : 0;
 
@@ -381,20 +672,45 @@ function migrate() {
 		return keepsNameA - keepsNameB;
 	} );
 
+	/**
+	 * Keep a file at its current path, reserving that path so nothing else lands on it.
+	 *
+	 * @param {string} file
+	 * @param {string} reason
+	 */
+	const leaveInPlace = ( file, reason ) => {
+		const key = `docs:${ file }`;
+
+		if ( claimed.has( key ) ) {
+			fatal.push( `${ file } can't stay where it is because ${ claimed.get( key ) } is moving to that path. ${ reason }` );
+
+			return;
+		}
+
+		claimed.set( key, file );
+		moves.set( file, { ...targetPath( file ), path: file, planning: false, conflict: true } );
+		note( `Left ${ file } in place: ${ reason }` );
+	};
+
 	for ( const file of ordered ) {
 		const target = targetPath( file );
 		const key    = `${ target.planning ? 'planning' : 'docs' }:${ target.path }`;
 
+		if ( target.planning && existsSync( join( repoRoot, '.planning', target.path ) ) ) {
+			leaveInPlace( file, `.planning/${ target.path } already exists. Merge the two by hand.` );
+
+			continue;
+		}
+
 		if ( claimed.has( key ) ) {
-			const winner = claimed.get( key );
-			const isShadowedLanding = file.endsWith( '.md' ) && published.get( importerSlug( file ).slug )?.file !== file;
+			const winner            = claimed.get( key );
+			const isShadowedLanding = publishable.has( file ) && ! isPublishedWinner( file );
 
 			if ( isShadowedLanding && importerSlug( winner ).slug === importerSlug( file ).slug ) {
-				dropped.push( file );
+				droppedWinner.set( file, winner );
 				note( `Dropped ${ file }: the docs site already published ${ winner } in its place, so this copy was never shown. Check it for anything worth keeping.` );
 			} else {
-				moves.set( file, { ...targetPath( file ), path: file, planning: false, conflict: true } );
-				note( `Left ${ file } in place: ${ target.path } is already taken by ${ winner }. Merge the two by hand.` );
+				leaveInPlace( file, `${ target.path } is already taken by ${ winner }. Merge the two by hand.` );
 			}
 
 			continue;
@@ -405,13 +721,29 @@ function migrate() {
 	}
 
 	const newPathOf = ( oldFile ) => {
+		if ( droppedWinner.has( oldFile ) ) {
+			return newPathOf( droppedWinner.get( oldFile ) );
+		}
+
 		const move = moves.get( oldFile );
 
 		return move && ! move.planning ? move.path : null;
 	};
 
+	const docsIgnoreAdditions = [];
+
+	for ( const [ from, move ] of moves ) {
+		if ( ! move.planning && move.path !== from && matchesDocsIgnore( from, ignorePatterns ) && ! matchesDocsIgnore( move.path, ignorePatterns ) ) {
+			docsIgnoreAdditions.push( move.path );
+		}
+	}
+
+	if ( 0 < docsIgnoreAdditions.length ) {
+		note( `Added ${ docsIgnoreAdditions.join( ', ' ) } to .docsignore so renamed pages stay unpublished.` );
+	}
+
 	const resolveOldTarget = ( currentOld, target ) => {
-		const clean = decodeURI( target ).replace( /^\.\//, '' );
+		const clean = safeDecode( target ).replace( /^\.\//, '' );
 
 		const direct = posix.normalize( posix.join( posix.dirname( currentOld ), clean ) );
 
@@ -442,7 +774,7 @@ function migrate() {
 			return null;
 		}
 
-		const inRepo = posix.normalize( posix.join( 'docs', posix.dirname( currentOld ), decodeURI( target ) ) );
+		const inRepo = posix.normalize( posix.join( 'docs', posix.dirname( currentOld ), safeDecode( target ) ) );
 
 		if ( inRepo.startsWith( '..' ) || inRepo.startsWith( 'docs/' ) || ! existsSync( join( repoRoot, inRepo ) ) ) {
 			return null;
@@ -466,6 +798,7 @@ function migrate() {
 	};
 
 	const rewritten  = new Map();
+	const anchorRefs = [];
 	let linksFixed   = 0;
 	let linksBroken  = 0;
 	let fencesTagged = 0;
@@ -473,7 +806,7 @@ function migrate() {
 	for ( const oldFile of pageFiles ) {
 		const newFile = newPathOf( oldFile );
 
-		if ( null === newFile || dropped.includes( oldFile ) ) {
+		if ( null === newFile || droppedWinner.has( oldFile ) ) {
 			continue;
 		}
 
@@ -485,23 +818,77 @@ function migrate() {
 		let h1Count            = 0;
 		let firstH1            = null;
 
-		for ( let index = 0; index < lines.length; index++ ) {
-			let line         = lines[ index ];
-			const fenceMatch = line.match( /^(\s{0,3})(`{3,}|~{3,})\s*([^\s`]*)(.*)$/ );
+		/**
+		 * Rewrite one link target for the page's new location.
+		 *
+		 * @param {string}  target
+		 * @param {boolean} isImage
+		 * @returns {string}
+		 */
+		const rewriteTarget = ( target, isImage ) => {
+			if ( /^(https?:|mailto:|tel:)/i.test( target ) ) {
+				return target;
+			}
 
-			if ( fenceMatch ) {
-				if ( null === fence ) {
-					fence      = fenceMatch[2];
-					fenceStart = output.length;
-					output.push( line );
+			if ( target.startsWith( '#' ) ) {
+				anchorRefs.push( { page: newFile, line: output.length, path: '', targetNew: newFile, fragment: target.slice( 1 ) } );
 
-					continue;
+				return target;
+			}
+
+			const [ path, ...rest ] = target.split( /(?=[#?])/ );
+			const suffix            = rest.join( '' );
+
+			if ( '' === path ) {
+				return target;
+			}
+
+			const found = resolveOldTarget( oldFile, path );
+
+			if ( ! found || ! newPathOf( found ) ) {
+				const external = sourceUrl( oldFile, path );
+
+				if ( external ) {
+					linksFixed++;
+
+					return `${ external }${ suffix }`;
 				}
 
-				if ( fenceMatch[2][0] === fence[0] && fenceMatch[2].length >= fence.length && '' === fenceMatch[3] ) {
-					const opening = output[ fenceStart ].match( /^(\s{0,3})(`{3,}|~{3,})\s*([^\s`]*)(.*)$/ );
+				linksBroken++;
 
-					if ( '' === opening[3] ) {
+				return target;
+			}
+
+			const targetNew = newPathOf( found );
+			const linkPath  = relativeLink( newFile, targetNew );
+
+			if ( ! isImage ) {
+				recordLinkOrder( newFile, targetNew );
+
+				if ( suffix.startsWith( '#' ) ) {
+					anchorRefs.push( { page: newFile, line: output.length, path: linkPath, targetNew, fragment: suffix.slice( 1 ) } );
+				}
+			}
+
+			const link = `${ linkPath }${ suffix }`;
+
+			if ( link !== target ) {
+				linksFixed++;
+			}
+
+			return link;
+		};
+
+		for ( let index = 0; index < lines.length; index++ ) {
+			let line = lines[ index ];
+
+			if ( null !== fence ) {
+				const closing = line.match( CLOSING_FENCE );
+
+				if ( closing && closing[1][0] === fence[0] && closing[1].length >= fence.length ) {
+					const opening = output[ fenceStart ].match( OPENING_FENCE );
+
+					if ( '' === opening[3].trim() ) {
 						const language        = guessLanguage( output.slice( fenceStart + 1 ) );
 						output[ fenceStart ] = `${ opening[1] }${ opening[2] }${ language }`;
 						fencesTagged++;
@@ -515,7 +902,11 @@ function migrate() {
 				continue;
 			}
 
-			if ( null !== fence ) {
+			const opening = line.match( OPENING_FENCE );
+
+			if ( opening && ! ( '`' === opening[2][0] && opening[3].includes( '`' ) ) ) {
+				fence      = opening[2];
+				fenceStart = output.length;
 				output.push( line );
 
 				continue;
@@ -525,9 +916,7 @@ function migrate() {
 
 			if ( alert && /^\s{0,3}>/.test( lines[ index + 1 ] ?? '' ) ) {
 				const next = lines[ ++index ].replace( /^\s{0,3}>\s?/, '' );
-				output.push( `${ alert[1] } **${ ALERT_LABELS[ alert[2].toUpperCase() ] }:** ${ next }` );
-
-				continue;
+				line       = `${ alert[1] } **${ ALERT_LABELS[ alert[2].toUpperCase() ] }:** ${ next }`;
 			}
 
 			if ( /^#\s+/.test( line ) ) {
@@ -547,61 +936,29 @@ function migrate() {
 				return `\u0000${ codeSpans.length - 1 }\u0000`;
 			} );
 
-			line = line.replace( /\[\[([^\]|]+?)(?:\|([^\]]+?))?\]\]/g, ( whole, page, text ) => {
-				const found = resolveOldTarget( oldFile, page.trim() );
+			const definition = line.match( /^(\s{0,3}\[[^\]^][^\]]*\]:[ \t]*)(<?)([^\s>]+)(>?)(.*)$/ );
 
-				if ( ! found || ! newPathOf( found ) ) {
-					linksBroken++;
+			if ( definition ) {
+				const isImage = IMAGE_EXTENSIONS.includes( extname( definition[3].split( /[#?]/ )[0] ).toLowerCase() );
+				line          = `${ definition[1] }${ definition[2] }${ rewriteTarget( definition[3], isImage ) }${ definition[4] }${ definition[5] }`;
+			} else {
+				line = line.replace( /\[\[([^\]|]+?)(?:\|([^\]]+?))?\]\]/g, ( whole, page, text ) => {
+					const found = resolveOldTarget( oldFile, page.trim() );
 
-					return whole;
-				}
+					if ( ! found || ! newPathOf( found ) ) {
+						linksBroken++;
 
-				linksFixed++;
-				recordLinkOrder( newFile, newPathOf( found ) );
-
-				return `[${ ( text ?? page ).trim() }](${ relativeLink( newFile, newPathOf( found ) ) })`;
-			} );
-
-			line = line.replace( /(!?)\[([^\]]*)\]\(\s*<?([^)\s>]+)>?((?:\s+"[^"]*")?)\s*\)/g, ( whole, bang, text, target, linkTitle ) => {
-				if ( /^(https?:|mailto:|tel:|#)/i.test( target ) ) {
-					return whole;
-				}
-
-				const [ path, ...rest ] = target.split( /(?=[#?])/ );
-				const suffix            = rest.join( '' );
-
-				if ( '' === path ) {
-					return whole;
-				}
-
-				const found = resolveOldTarget( oldFile, path );
-
-				if ( ! found || ! newPathOf( found ) ) {
-					const external = sourceUrl( oldFile, path );
-
-					if ( external ) {
-						linksFixed++;
-
-						return `${ bang }[${ text }](${ external }${ suffix }${ linkTitle })`;
+						return whole;
 					}
 
-					linksBroken++;
-
-					return whole;
-				}
-
-				const link = `${ relativeLink( newFile, newPathOf( found ) ) }${ suffix }`;
-
-				if ( ! bang ) {
-					recordLinkOrder( newFile, newPathOf( found ) );
-				}
-
-				if ( link !== target ) {
 					linksFixed++;
-				}
+					recordLinkOrder( newFile, newPathOf( found ) );
 
-				return `${ bang }[${ text }](${ link }${ linkTitle })`;
-			} );
+					return `[${ ( text ?? page ).trim() }](${ relativeLink( newFile, newPathOf( found ) ) })`;
+				} );
+
+				line = line.replace( /(!?)\[([^\]]*)\]\(\s*<?([^)\s>]+)>?((?:\s+"[^"]*")?)\s*\)/g, ( whole, bang, text, target, linkTitle ) => `${ bang }[${ text }](${ rewriteTarget( target, '!' === bang ) }${ linkTitle })` );
+			}
 
 			line = line.replace( /\u0000(\d+)\u0000/g, ( placeholder, position ) => codeSpans[ Number( position ) ] );
 
@@ -617,24 +974,23 @@ function migrate() {
 
 	const assignOrder = ( pages, parentPage, start, step ) => {
 		const preferred = linkOrder.get( parentPage ) ?? [];
+		const position  = ( page ) => preferred.findIndex( ( target ) => target === page || target.startsWith( page.replace( /\.md$/, '/' ) ) );
 		const existing  = ( page ) => {
 			const value = rewritten.get( page )?.fields.find( ( [ key ] ) => 'menu_order' === key )?.[1];
 
-			return /^-?\d+$/.test( value ?? '' ) ? Number( value ) : null;
+			return /^-?\d+$/.test( value ?? '' ) ? Number( value ) : Infinity;
 		};
 
-		const allHaveOrder = pages.every( ( page ) => null !== existing( page ) );
-
 		return [ ...pages ].sort( ( a, b ) => {
-			if ( allHaveOrder && existing( a ) !== existing( b ) ) {
-				return existing( a ) - existing( b );
-			}
-
-			const positionA = preferred.findIndex( ( target ) => target === a || target.startsWith( a.replace( /\.md$/, '/' ) ) );
-			const positionB = preferred.findIndex( ( target ) => target === b || target.startsWith( b.replace( /\.md$/, '/' ) ) );
+			const positionA = position( a );
+			const positionB = position( b );
 
 			if ( positionA !== positionB ) {
 				return ( -1 === positionA ? Infinity : positionA ) - ( -1 === positionB ? Infinity : positionB );
+			}
+
+			if ( existing( a ) !== existing( b ) ) {
+				return existing( a ) - existing( b );
 			}
 
 			return a.localeCompare( b );
@@ -643,19 +999,20 @@ function migrate() {
 
 	const menuOrders = new Map();
 	const topLevel   = [ ...rewritten.keys() ].filter( ( page ) => ! page.includes( '/' ) );
-	const custom     = topLevel.filter( ( page ) => undefined === STANDARD_SLOTS[ page.replace( /\.md$/, '' ) ] );
+	const custom     = topLevel.filter( ( page ) => undefined === slots[ page.replace( /\.md$/, '' ) ] );
 
 	for ( const page of topLevel ) {
-		const slot = STANDARD_SLOTS[ page.replace( /\.md$/, '' ) ];
+		const slot = slots[ page.replace( /\.md$/, '' ) ];
 
 		if ( undefined !== slot ) {
 			menuOrders.set( page, slot );
 		}
 	}
 
-	const customStep = 0 === custom.length ? 5 : Math.max( 1, Math.min( 5, Math.floor( 39 / custom.length ) ) );
+	const customStart = Object.values( slots ).includes( 40 ) ? 45 : 40;
+	const customStep  = Math.max( 1, Math.min( 5, Math.floor( ( 79 - customStart ) / Math.max( 1, custom.length - 1 ) ) ) );
 
-	for ( const [ page, order ] of assignOrder( custom, 'home.md', 40, customStep ) ) {
+	for ( const [ page, order ] of assignOrder( custom, 'home.md', customStart, customStep ) ) {
 		menuOrders.set( page, Math.min( order, 79 ) );
 	}
 
@@ -678,17 +1035,49 @@ function migrate() {
 		}
 	}
 
+	const titles        = new Map();
+	const anchorChanges = new Map();
+
+	for ( const [ newFile, page ] of rewritten ) {
+		const stem     = posix.basename( newFile, '.md' );
+		const fieldMap = new Map( page.fields );
+		const h1Line   = null === page.firstH1 ? null : page.lines[ page.firstH1 ];
+		const h1Text   = h1Line ? h1Line.replace( /^#\s+/, '' ).replace( /\s+#*\s*$/, '' ).trim() : null;
+		const title    = ( ! newFile.includes( '/' ) && STANDARD_TITLES[ stem ] ) || fieldMap.get( 'title' ) || h1Text || humanize( stem );
+
+		titles.set( newFile, title );
+
+		if ( null !== h1Text && githubAnchor( h1Text ) !== githubAnchor( title ) ) {
+			anchorChanges.set( newFile, { from: githubAnchor( h1Text ), to: githubAnchor( title ) } );
+		}
+	}
+
+	let anchorsFixed = 0;
+
+	for ( const ref of anchorRefs ) {
+		const change = anchorChanges.get( ref.targetNew );
+
+		if ( ! change || ref.fragment !== change.from ) {
+			continue;
+		}
+
+		const page    = rewritten.get( ref.page );
+		const pattern = new RegExp( `(?<=[(<\\s]|^)${ escapeRegExp( `${ ref.path }#${ change.from }` ) }(?=[)>\\s"']|$)` );
+		const updated = page.lines[ ref.line ].replace( pattern, `${ ref.path }#${ change.to }` );
+
+		if ( updated !== page.lines[ ref.line ] ) {
+			page.lines[ ref.line ] = updated;
+			anchorsFixed++;
+		}
+	}
+
 	const contents = new Map();
 
 	for ( const [ newFile, page ] of rewritten ) {
-		const stem      = posix.basename( newFile, '.md' );
 		const fieldMap  = new Map( page.fields );
-		const h1Line    = null === page.firstH1 ? null : page.lines[ page.firstH1 ];
-		const h1Text    = h1Line ? h1Line.replace( /^#\s+/, '' ).replace( /\s+#*\s*$/, '' ).trim() : null;
-		const topLevel  = ! newFile.includes( '/' );
-		const title     = ( topLevel && STANDARD_TITLES[ stem ] ) || fieldMap.get( 'title' ) || h1Text || humanize( stem );
+		const title     = titles.get( newFile );
 		const oldSlug   = importerSlug( page.oldFile ).slug;
-		const newSlug   = newFile.replace( /\.md$/, '' );
+		const newSlug   = importerSlug( newFile ).slug;
 		const redirects = new Set( ( fieldMap.get( 'redirect_from' ) ?? '' ).split( ',' ).map( ( value ) => value.trim() ).filter( Boolean ) );
 
 		if ( oldSlug !== newSlug && published.get( oldSlug )?.file === page.oldFile ) {
@@ -728,21 +1117,35 @@ function migrate() {
 		contents.set( newFile, `${ front.join( '\n' ) }\n\n${ lines.join( '\n' ).replace( /\n*$/, '\n' ) }` );
 	}
 
+	const tracked        = trackedFiles();
+	const removed        = [ ...droppedWinner.keys(), ...leftovers ];
+	const preserved      = removed.filter( ( file ) => ! tracked.has( file ) && '.DS_Store' !== posix.basename( file ) );
+	const preservedPaths = new Map( preserved.map( ( file ) => [ file, `removed-docs/${ file }` ] ) );
+
+	for ( const [ file, path ] of preservedPaths ) {
+		if ( existsSync( join( repoRoot, '.planning', path ) ) ) {
+			fatal.push( `${ file } isn't tracked by git, and .planning/${ path } already exists, so there's nowhere safe to keep it. Move one of them first.` );
+		}
+	}
+
 	const renamed  = [ ...moves ].filter( ( [ from, move ] ) => move.path !== from || move.planning );
 	const planning = renamed.filter( ( [ , move ] ) => move.planning );
 
-	console.log( `Docs migration plan for ${ relative( process.cwd(), docsPath ) || '.' }${ write ? '' : ' (dry run)' }\n` );
+	console.log( `Docs migration plan for ${ relative( process.cwd(), docsPath ) || '.' } (${ archetype })${ write ? '' : ' (dry run)' }\n` );
 
 	for ( const [ from, move ] of renamed ) {
 		console.log( `  ${ from } → ${ move.planning ? `.planning/${ move.path }` : move.path }` );
 	}
 
-	for ( const file of dropped ) {
-		console.log( `  ${ file } → (removed, never published)` );
+	for ( const file of removed ) {
+		const reason = droppedWinner.has( file ) ? 'never published' : "the standard doesn't need it";
+		const kept   = preservedPaths.has( file ) ? `, untracked so kept in .planning/${ preservedPaths.get( file ) }` : '';
+
+		console.log( `  ${ file } → (removed: ${ reason }${ kept })` );
 	}
 
-	console.log( `\n  ${ renamed.length - planning.length } page(s) renamed, ${ planning.length } internal file(s) moved to .planning/, ${ dropped.length } shadowed page(s) removed.` );
-	console.log( `  ${ contents.size } page(s) normalized, ${ linksFixed } link(s) rewritten, ${ fencesTagged } code block(s) tagged.` );
+	console.log( `\n  ${ renamed.length - planning.length } page(s) renamed, ${ planning.length } internal file(s) moved to .planning/, ${ droppedWinner.size } shadowed page(s) removed.` );
+	console.log( `  ${ contents.size } page(s) normalized, ${ linksFixed } link(s) rewritten, ${ anchorsFixed } anchor(s) updated, ${ fencesTagged } code block(s) tagged.` );
 
 	if ( 0 < linksBroken ) {
 		note( `${ linksBroken } link(s) couldn't be resolved to a page and were left as they are. docs-lint will list them.` );
@@ -756,14 +1159,32 @@ function migrate() {
 		}
 	}
 
+	if ( fatal.length ) {
+		console.log( `\n${ write ? "Can't apply" : 'Must be fixed before --write' }:` );
+
+		for ( const message of fatal ) {
+			console.log( `  - ${ message }` );
+		}
+	}
+
 	if ( ! write ) {
 		console.log( '\nRun again with --write to apply.' );
 
 		return;
 	}
 
+	if ( fatal.length ) {
+		process.exit( 1 );
+	}
+
 	const staging = join( repoRoot, '.docs-migrate-staging' );
-	rmSync( staging, { recursive: true, force: true } );
+	const backup  = join( repoRoot, '.docs-migrate-backup' );
+
+	if ( existsSync( staging ) || existsSync( backup ) ) {
+		fail( `${ staging } or ${ backup } already exists, so an earlier run was interrupted. Check them for files you need (the backup holds the original docs/), remove them, then run again.` );
+	}
+
+	mkdirSync( join( staging, 'docs' ), { recursive: true } );
 
 	for ( const [ from, move ] of moves ) {
 		const destination = move.planning ? join( staging, 'planning', move.path ) : join( staging, 'docs', move.path );
@@ -772,33 +1193,57 @@ function migrate() {
 		if ( contents.has( move.path ) && ! move.planning && from.toLowerCase().endsWith( '.md' ) && rewritten.get( move.path )?.oldFile === from ) {
 			writeFileSync( destination, contents.get( move.path ) );
 		} else {
-			renameSync( join( docsPath, from ), destination );
+			copyFileSync( join( docsPath, from ), destination );
 		}
 	}
 
-	for ( const file of oldFiles ) {
-		rmSync( join( docsPath, file ), { force: true } );
+	for ( const [ file, path ] of preservedPaths ) {
+		const destination = join( staging, 'planning', path );
+		mkdirSync( dirname( destination ), { recursive: true } );
+		copyFileSync( join( docsPath, file ), destination );
 	}
 
-	const leftovers = listFiles( docsPath );
+	if ( hasDocsIgnore ) {
+		const original  = readFileSync( join( docsPath, '.docsignore' ), 'utf8' );
+		const additions = 0 < docsIgnoreAdditions.length ? `${ original.replace( /\n*$/, '\n' ) }\n# Renamed by docs-migrate\n${ docsIgnoreAdditions.join( '\n' ) }\n` : original;
 
-	rmSync( docsPath, { recursive: true, force: true } );
-	renameSync( join( staging, 'docs' ), docsPath );
-
-	for ( const leftover of leftovers ) {
-		console.log( `  Removed ${ leftover }, which the standard doesn't need. Restore it from git if it matters.` );
+		writeFileSync( join( staging, 'docs', '.docsignore' ), additions );
 	}
+
+	renameSync( docsPath, backup );
+
+	try {
+		renameSync( join( staging, 'docs' ), docsPath );
+	} catch ( error ) {
+		renameSync( backup, docsPath );
+		throw error;
+	}
+
+	const stuck = [];
 
 	if ( existsSync( join( staging, 'planning' ) ) ) {
 		const planningRoot = join( repoRoot, '.planning' );
 
 		for ( const file of listFilesUnder( join( staging, 'planning' ) ) ) {
 			const destination = join( planningRoot, file );
+
+			if ( existsSync( destination ) ) {
+				stuck.push( file );
+
+				continue;
+			}
+
 			mkdirSync( dirname( destination ), { recursive: true } );
 			renameSync( join( staging, 'planning', file ), destination );
 		}
 	}
 
+	if ( stuck.length ) {
+		console.log( `\nCouldn't move ${ stuck.join( ', ' ) } into .planning/ because the path is taken. They're still in ${ staging }/planning, and the original docs/ is in ${ backup }.` );
+		process.exit( 1 );
+	}
+
+	rmSync( backup, { recursive: true, force: true } );
 	rmSync( staging, { recursive: true, force: true } );
 	console.log( '\nApplied. Review the diff, then run docs-lint.mjs.' );
 }
@@ -812,13 +1257,11 @@ function migrate() {
 function listFilesUnder( directory ) {
 	const files = [];
 
-	for ( const name of readdirSync( directory ) ) {
-		const path = join( directory, name );
-
-		if ( statSync( path ).isDirectory() ) {
-			files.push( ...listFilesUnder( path ).map( ( file ) => join( name, file ) ) );
+	for ( const entry of readdirSync( directory, { withFileTypes: true } ) ) {
+		if ( entry.isDirectory() ) {
+			files.push( ...listFilesUnder( join( directory, entry.name ) ).map( ( file ) => join( entry.name, file ) ) );
 		} else {
-			files.push( name );
+			files.push( entry.name );
 		}
 	}
 
