@@ -75,6 +75,7 @@ const ALERT = /^\s{0,3}>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i;
 
 const OPENING_FENCE = /^\s{0,3}(`{3,}|~{3,})(.*)$/;
 const CLOSING_FENCE = /^\s{0,3}(`{3,}|~{3,})[ \t]*$/;
+const BLOCKQUOTE_PREFIX = /^(?:\s{0,3}>[ ]?)*/;
 
 const args         = process.argv.slice( 2 );
 const archetypeArg = args.find( ( arg ) => arg.startsWith( '--archetype=' ) );
@@ -152,11 +153,44 @@ function safeDecode( value ) {
 function parseScalar( raw ) {
 	const value = raw.trim();
 	const quote = value[0];
+	let output  = '';
 
-	if ( '"' === quote || "'" === quote ) {
-		const end = value.indexOf( quote, 1 );
+	if ( "'" === quote ) {
+		for ( let index = 1; index < value.length; index++ ) {
+			if ( "'" === value[ index ] ) {
+				if ( "'" !== value[ index + 1 ] ) {
+					break;
+				}
 
-		return -1 === end ? value.slice( 1 ) : value.slice( 1, end );
+				index++;
+			}
+
+			output += value[ index ];
+		}
+
+		return output;
+	}
+
+	if ( '"' === quote ) {
+		const escapes = { n: '\n', t: '\t', r: '\r', '"': '"', '\\': '\\', '/': '/', 0: '\0' };
+
+		for ( let index = 1; index < value.length; index++ ) {
+			const character = value[ index ];
+
+			if ( '\\' === character && index + 1 < value.length ) {
+				output += escapes[ value[ ++index ] ] ?? value[ index ];
+
+				continue;
+			}
+
+			if ( '"' === character ) {
+				break;
+			}
+
+			output += character;
+		}
+
+		return output;
 	}
 
 	return value.replace( /\s+#.*$/, '' ).trim();
@@ -244,8 +278,10 @@ function lintPage( file ) {
 	body.forEach( ( rawLine, index ) => {
 		const lineNumber = bodyStart + index;
 
+		const inner = rawLine.replace( BLOCKQUOTE_PREFIX, '' );
+
 		if ( null !== fence ) {
-			const closing = rawLine.match( CLOSING_FENCE );
+			const closing = inner.match( CLOSING_FENCE );
 
 			if ( closing && closing[1][0] === fence[0] && closing[1].length >= fence.length ) {
 				fence = null;
@@ -254,7 +290,7 @@ function lintPage( file ) {
 			return;
 		}
 
-		const opening = rawLine.match( OPENING_FENCE );
+		const opening = inner.match( OPENING_FENCE );
 
 		if ( opening && ! ( '`' === opening[1][0] && opening[2].includes( '`' ) ) ) {
 			fence = opening[1];

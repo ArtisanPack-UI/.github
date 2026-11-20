@@ -26,7 +26,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { constants, copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join, posix, relative, resolve, sep } from 'node:path';
 
 const INTERNAL_DIRECTORIES = [ 'plans', 'audits', 'design', 'benchmarks', 'decisions', 'notes', 'drafts' ];
@@ -90,6 +90,7 @@ const ALERT_LABELS = {
 
 const OPENING_FENCE = /^(\s{0,3})(`{3,}|~{3,})(.*)$/;
 const CLOSING_FENCE = /^\s{0,3}(`{3,}|~{3,})[ \t]*$/;
+const BLOCKQUOTE_PREFIX = /^(?:\s{0,3}>[ ]?)*/;
 
 const args         = process.argv.slice( 2 );
 const write        = args.includes( '--write' );
@@ -98,6 +99,8 @@ const archetype    = archetypeArg ? archetypeArg.split( '=' )[1] : 'package';
 const docsPath     = resolve( args.find( ( arg ) => ! arg.startsWith( '--' ) ) ?? 'docs' );
 const repoRoot     = dirname( docsPath );
 const slots        = { ...STANDARD_SLOTS, ...( ARCHETYPE_SLOTS[ archetype ] ?? {} ) };
+const staging      = join( repoRoot, '.docs-migrate-staging' );
+const backup       = join( repoRoot, '.docs-migrate-backup' );
 
 const notes = [];
 
@@ -203,14 +206,68 @@ function escapeRegExp( value ) {
 function parseScalar( raw ) {
 	const value = raw.trim();
 	const quote = value[0];
+	let output  = '';
 
-	if ( '"' === quote || "'" === quote ) {
-		const end = value.indexOf( quote, 1 );
+	if ( "'" === quote ) {
+		for ( let index = 1; index < value.length; index++ ) {
+			if ( "'" === value[ index ] ) {
+				if ( "'" !== value[ index + 1 ] ) {
+					break;
+				}
 
-		return -1 === end ? value.slice( 1 ) : value.slice( 1, end );
+				index++;
+			}
+
+			output += value[ index ];
+		}
+
+		return output;
+	}
+
+	if ( '"' === quote ) {
+		const escapes = { n: '\n', t: '\t', r: '\r', '"': '"', '\\': '\\', '/': '/', 0: '\0' };
+
+		for ( let index = 1; index < value.length; index++ ) {
+			const character = value[ index ];
+
+			if ( '\\' === character && index + 1 < value.length ) {
+				output += escapes[ value[ ++index ] ] ?? value[ index ];
+
+				continue;
+			}
+
+			if ( '"' === character ) {
+				break;
+			}
+
+			output += character;
+		}
+
+		return output;
 	}
 
 	return value.replace( /\s+#.*$/, '' ).trim();
+}
+
+/**
+ * Byte-per-character form of a string, so regular expressions match bytes the way PHP's fnmatch() does.
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+function toBytes( value ) {
+	return Buffer.from( value, 'utf8' ).toString( 'latin1' );
+}
+
+/**
+ * Compare two strings byte by byte, like PHP's sort() does for paths.
+ *
+ * @param {string} a
+ * @param {string} b
+ * @returns {number}
+ */
+function compareBytes( a, b ) {
+	return Buffer.compare( Buffer.from( a, 'utf8' ), Buffer.from( b, 'utf8' ) );
 }
 
 /**
@@ -277,6 +334,8 @@ function importerSlug( relativePath ) {
 /**
  * Turn a gitignore-style glob into a regular expression with PHP fnmatch() semantics (no FNM_PATHNAME).
  *
+ * Pass the pattern through toBytes() and test byte strings, so `?` matches one byte like fnmatch() does.
+ *
  * @param {string} pattern
  * @returns {RegExp}
  */
@@ -286,7 +345,9 @@ function globToRegExp( pattern ) {
 	for ( let index = 0; index < pattern.length; index++ ) {
 		const character = pattern[ index ];
 
-		if ( '*' === character ) {
+		if ( '\\' === character && index + 1 < pattern.length ) {
+			source += escapeRegExp( pattern[ ++index ] );
+		} else if ( '*' === character ) {
 			source += '.*';
 		} else if ( '?' === character ) {
 			source += '.';
@@ -335,10 +396,76 @@ function matchesDocsIgnore( relativePath, patterns ) {
 			return relativePath.startsWith( `${ directory }/` ) || posix.dirname( relativePath ).split( '/' ).includes( directory );
 		}
 
-		const regex = globToRegExp( pattern );
+		const regex = globToRegExp( toBytes( pattern ) );
 
-		return regex.test( relativePath ) || regex.test( base );
+		return regex.test( toBytes( relativePath ) ) || regex.test( toBytes( base ) );
 	} );
+}
+
+/**
+ * Whether the importer skips a path because of its name, folders or .docsignore (not front matter).
+ *
+ * @param {string}   relativePath
+ * @param {string[]} patterns
+ * @returns {boolean}
+ */
+function isExcludedByPath( relativePath, patterns ) {
+	const segments = relativePath.split( '/' );
+
+	return /^[._]/.test( segments[ segments.length - 1 ] )
+		|| segments.slice( 0, -1 ).some( ( segment ) => IMPORTER_IGNORED_DIRECTORIES.includes( segment.toLowerCase() ) )
+		|| matchesDocsIgnore( relativePath, patterns );
+}
+
+/**
+ * Why a .planning destination can't be used: a symlink or file in its path, or an existing file.
+ *
+ * @param {string} planningRoot
+ * @param {string} path
+ * @returns {'symlink'|'blocked'|'exists'|null}
+ */
+function planningProblem( planningRoot, path ) {
+	let current = planningRoot;
+
+	for ( const segment of [ '', ...path.split( '/' ).slice( 0, -1 ) ] ) {
+		current = segment ? join( current, segment ) : current;
+
+		if ( ! existsSync( current ) && ! isSymlink( current ) ) {
+			return null;
+		}
+
+		const stats = lstatSync( current );
+
+		if ( stats.isSymbolicLink() ) {
+			return 'symlink';
+		}
+
+		if ( ! stats.isDirectory() ) {
+			return 'blocked';
+		}
+	}
+
+	const leaf = join( planningRoot, path );
+
+	if ( isSymlink( leaf ) ) {
+		return 'symlink';
+	}
+
+	return existsSync( leaf ) ? 'exists' : null;
+}
+
+/**
+ * Whether a path is a symbolic link (including a dangling one).
+ *
+ * @param {string} path
+ * @returns {boolean}
+ */
+function isSymlink( path ) {
+	try {
+		return lstatSync( path ).isSymbolicLink();
+	} catch {
+		return false;
+	}
 }
 
 /**
@@ -376,7 +503,7 @@ function importerFrontMatter( content ) {
 function listFiles( directory, symlinks ) {
 	const files = [];
 
-	for ( const entry of readdirSync( directory, { withFileTypes: true } ).sort( ( a, b ) => a.name.localeCompare( b.name ) ) ) {
+	for ( const entry of readdirSync( directory, { withFileTypes: true } ) ) {
 		const path         = join( directory, entry.name );
 		const relativePath = relative( docsPath, path ).split( sep ).join( '/' );
 
@@ -543,6 +670,10 @@ function assertDocsFolder() {
 		fail( `Unknown archetype "${ archetype }". Use one of: ${ Object.keys( ARCHETYPE_SLOTS ).join( ', ' ) }.` );
 	}
 
+	if ( ! existsSync( docsPath ) && existsSync( backup ) ) {
+		fail( `An earlier run stopped after moving docs/ to ${ backup }. Restore it first (mv "${ backup }" "${ docsPath }"), remove ${ staging } if it exists, then run again.` );
+	}
+
 	if ( ! existsSync( docsPath ) || ! lstatSync( docsPath ).isDirectory() ) {
 		fail( `No docs folder at ${ docsPath }.` );
 	}
@@ -561,13 +692,17 @@ function assertDocsFolder() {
 }
 
 /**
- * Files git tracks under the docs folder, relative to it.
+ * Files under the docs folder that git can restore exactly: tracked, with no unstaged edits.
  *
  * @returns {Set<string>}
  */
-function trackedFiles() {
+function recoverableFiles() {
+	const run = ( gitArgs ) => execFileSync( 'git', [ '-C', docsPath, ...gitArgs ], { encoding: 'utf8', stdio: [ 'ignore', 'pipe', 'ignore' ] } ).split( '\0' ).filter( Boolean );
+
 	try {
-		return new Set( execFileSync( 'git', [ '-C', docsPath, 'ls-files', '-z' ], { encoding: 'utf8', stdio: [ 'ignore', 'pipe', 'ignore' ] } ).split( '\0' ).filter( Boolean ) );
+		const modified = new Set( run( [ 'diff', '--name-only', '--relative', '-z' ] ) );
+
+		return new Set( run( [ 'ls-files', '-z' ] ).filter( ( file ) => ! modified.has( file ) ) );
 	} catch {
 		return new Set();
 	}
@@ -580,13 +715,24 @@ function migrate() {
 	assertDocsFolder();
 
 	const symlinks       = [];
-	const allFiles       = listFiles( docsPath, symlinks );
-	const oldFiles       = allFiles.filter( ( file ) => ! /^[._]/.test( posix.basename( file ) ) );
-	const pageFiles      = oldFiles.filter( ( file ) => file.toLowerCase().endsWith( '.md' ) );
+	const allFiles       = listFiles( docsPath, symlinks ).sort( compareBytes );
+	const oldFiles       = [];
+	const leftovers      = [];
 	const ignorePatterns = readDocsIgnore();
 	const hasDocsIgnore  = allFiles.includes( '.docsignore' );
-	const leftovers      = allFiles.filter( ( file ) => ! oldFiles.includes( file ) && '.docsignore' !== file );
+	const planningRoot   = join( repoRoot, '.planning' );
 	const fatal          = [];
+
+	for ( const file of allFiles ) {
+		if ( ! /^[._]/.test( posix.basename( file ) ) ) {
+			oldFiles.push( file );
+		} else if ( '.docsignore' !== file ) {
+			leftovers.push( file );
+		}
+	}
+
+	const oldFileSet = new Set( oldFiles );
+	const pageFiles  = oldFiles.filter( ( file ) => file.toLowerCase().endsWith( '.md' ) );
 
 	for ( const link of symlinks ) {
 		note( `${ link } is a symbolic link. The script doesn't follow or move links; replace it with real files first.` );
@@ -603,17 +749,7 @@ function migrate() {
 	 * @returns {boolean}
 	 */
 	const isPublishable = ( file ) => {
-		const segments = file.split( '/' );
-
-		if ( /^[._]/.test( segments[ segments.length - 1 ] ) ) {
-			return false;
-		}
-
-		if ( segments.slice( 0, -1 ).some( ( segment ) => IMPORTER_IGNORED_DIRECTORIES.includes( segment.toLowerCase() ) ) ) {
-			return false;
-		}
-
-		if ( matchesDocsIgnore( file, ignorePatterns ) ) {
+		if ( isExcludedByPath( file, ignorePatterns ) ) {
 			return false;
 		}
 
@@ -679,7 +815,7 @@ function migrate() {
 	 * @param {string} reason
 	 */
 	const leaveInPlace = ( file, reason ) => {
-		const key = `docs:${ file }`;
+		const key = `docs:${ file.toLowerCase() }`;
 
 		if ( claimed.has( key ) ) {
 			fatal.push( `${ file } can't stay where it is because ${ claimed.get( key ) } is moving to that path. ${ reason }` );
@@ -694,12 +830,18 @@ function migrate() {
 
 	for ( const file of ordered ) {
 		const target = targetPath( file );
-		const key    = `${ target.planning ? 'planning' : 'docs' }:${ target.path }`;
+		const key    = `${ target.planning ? 'planning' : 'docs' }:${ target.path.toLowerCase() }`;
 
-		if ( target.planning && existsSync( join( repoRoot, '.planning', target.path ) ) ) {
-			leaveInPlace( file, `.planning/${ target.path } already exists. Merge the two by hand.` );
+		if ( target.planning ) {
+			const problem = planningProblem( planningRoot, target.path );
 
-			continue;
+			if ( 'symlink' === problem ) {
+				fatal.push( `.planning/${ target.path } goes through a symbolic link. Replace it with a real folder so files can't be written outside the repo.` );
+			} else if ( problem ) {
+				leaveInPlace( file, `.planning/${ target.path } ${ 'exists' === problem ? 'already exists' : 'is blocked by a file in its path' }. Merge the two by hand.` );
+
+				continue;
+			}
 		}
 
 		if ( claimed.has( key ) ) {
@@ -733,7 +875,7 @@ function migrate() {
 	const docsIgnoreAdditions = [];
 
 	for ( const [ from, move ] of moves ) {
-		if ( ! move.planning && move.path !== from && matchesDocsIgnore( from, ignorePatterns ) && ! matchesDocsIgnore( move.path, ignorePatterns ) ) {
+		if ( ! move.planning && move.path !== from && from.toLowerCase().endsWith( '.md' ) && isExcludedByPath( from, ignorePatterns ) && ! isExcludedByPath( move.path, ignorePatterns ) ) {
 			docsIgnoreAdditions.push( move.path );
 		}
 	}
@@ -748,7 +890,7 @@ function migrate() {
 		const direct = posix.normalize( posix.join( posix.dirname( currentOld ), clean ) );
 
 		for ( const candidate of [ direct, `${ direct }.md`, `${ direct }/${ posix.basename( direct ) }.md` ] ) {
-			if ( oldFiles.includes( candidate ) ) {
+			if ( oldFileSet.has( candidate ) ) {
 				return candidate;
 			}
 		}
@@ -780,7 +922,7 @@ function migrate() {
 			return null;
 		}
 
-		return `${ repositoryUrl }/${ inRepo }`;
+		return `${ repositoryUrl }/${ inRepo.split( '/' ).map( encodeURIComponent ).join( '/' ) }`;
 	};
 
 	const relativeLink = ( fromNew, toNew ) => posix.relative( posix.dirname( fromNew ), toNew );
@@ -799,6 +941,19 @@ function migrate() {
 
 	const rewritten  = new Map();
 	const anchorRefs = [];
+
+	/**
+	 * Stand-in for a link's #fragment, resolved once every page's final H1 is known.
+	 *
+	 * @param {string} targetNew
+	 * @param {string} fragment
+	 * @returns {string}
+	 */
+	const anchorToken = ( targetNew, fragment ) => {
+		anchorRefs.push( { targetNew, fragment } );
+
+		return `\u0001${ anchorRefs.length - 1 }\u0001`;
+	};
 	let linksFixed   = 0;
 	let linksBroken  = 0;
 	let fencesTagged = 0;
@@ -831,9 +986,7 @@ function migrate() {
 			}
 
 			if ( target.startsWith( '#' ) ) {
-				anchorRefs.push( { page: newFile, line: output.length, path: '', targetNew: newFile, fragment: target.slice( 1 ) } );
-
-				return target;
+				return anchorToken( newFile, target.slice( 1 ) );
 			}
 
 			const [ path, ...rest ] = target.split( /(?=[#?])/ );
@@ -865,32 +1018,31 @@ function migrate() {
 			if ( ! isImage ) {
 				recordLinkOrder( newFile, targetNew );
 
-				if ( suffix.startsWith( '#' ) ) {
-					anchorRefs.push( { page: newFile, line: output.length, path: linkPath, targetNew, fragment: suffix.slice( 1 ) } );
-				}
 			}
 
-			const link = `${ linkPath }${ suffix }`;
-
-			if ( link !== target ) {
+			if ( `${ linkPath }${ suffix }` !== target ) {
 				linksFixed++;
 			}
 
-			return link;
+			return ! isImage && suffix.startsWith( '#' ) ? `${ linkPath }${ anchorToken( targetNew, suffix.slice( 1 ) ) }` : `${ linkPath }${ suffix }`;
 		};
 
 		for ( let index = 0; index < lines.length; index++ ) {
-			let line = lines[ index ];
+			let line     = lines[ index ];
+			const quote  = line.match( BLOCKQUOTE_PREFIX )[0];
+			const inner  = line.slice( quote.length );
 
 			if ( null !== fence ) {
-				const closing = line.match( CLOSING_FENCE );
+				const closing = inner.match( CLOSING_FENCE );
 
 				if ( closing && closing[1][0] === fence[0] && closing[1].length >= fence.length ) {
-					const opening = output[ fenceStart ].match( OPENING_FENCE );
+					const openingLine = output[ fenceStart ];
+					const prefix      = openingLine.match( BLOCKQUOTE_PREFIX )[0];
+					const opening     = openingLine.slice( prefix.length ).match( OPENING_FENCE );
 
 					if ( '' === opening[3].trim() ) {
-						const language        = guessLanguage( output.slice( fenceStart + 1 ) );
-						output[ fenceStart ] = `${ opening[1] }${ opening[2] }${ language }`;
+						const body            = output.slice( fenceStart + 1 ).map( ( codeLine ) => codeLine.replace( BLOCKQUOTE_PREFIX, '' ) );
+						output[ fenceStart ] = `${ prefix }${ opening[1] }${ opening[2] }${ guessLanguage( body ) }`;
 						fencesTagged++;
 					}
 
@@ -902,7 +1054,7 @@ function migrate() {
 				continue;
 			}
 
-			const opening = line.match( OPENING_FENCE );
+			const opening = inner.match( OPENING_FENCE );
 
 			if ( opening && ! ( '`' === opening[2][0] && opening[3].includes( '`' ) ) ) {
 				fence      = opening[2];
@@ -1037,11 +1189,32 @@ function migrate() {
 
 	const titles        = new Map();
 	const anchorChanges = new Map();
+	let anchorsFixed    = 0;
+
+	/**
+	 * Replace anchor tokens with their fragment, updated to the target's new H1 anchor when asked.
+	 *
+	 * @param {string}  line
+	 * @param {boolean} applyChanges
+	 * @returns {string}
+	 */
+	const restoreAnchors = ( line, applyChanges ) => line.replace( /\u0001(\d+)\u0001/g, ( token, id ) => {
+		const ref    = anchorRefs[ Number( id ) ];
+		const change = applyChanges ? anchorChanges.get( ref.targetNew ) : null;
+
+		if ( change && ref.fragment === change.from ) {
+			anchorsFixed++;
+
+			return `#${ change.to }`;
+		}
+
+		return `#${ ref.fragment }`;
+	} );
 
 	for ( const [ newFile, page ] of rewritten ) {
 		const stem     = posix.basename( newFile, '.md' );
 		const fieldMap = new Map( page.fields );
-		const h1Line   = null === page.firstH1 ? null : page.lines[ page.firstH1 ];
+		const h1Line   = null === page.firstH1 ? null : restoreAnchors( page.lines[ page.firstH1 ], false );
 		const h1Text   = h1Line ? h1Line.replace( /^#\s+/, '' ).replace( /\s+#*\s*$/, '' ).trim() : null;
 		const title    = ( ! newFile.includes( '/' ) && STANDARD_TITLES[ stem ] ) || fieldMap.get( 'title' ) || h1Text || humanize( stem );
 
@@ -1052,23 +1225,8 @@ function migrate() {
 		}
 	}
 
-	let anchorsFixed = 0;
-
-	for ( const ref of anchorRefs ) {
-		const change = anchorChanges.get( ref.targetNew );
-
-		if ( ! change || ref.fragment !== change.from ) {
-			continue;
-		}
-
-		const page    = rewritten.get( ref.page );
-		const pattern = new RegExp( `(?<=[(<\\s]|^)${ escapeRegExp( `${ ref.path }#${ change.from }` ) }(?=[)>\\s"']|$)` );
-		const updated = page.lines[ ref.line ].replace( pattern, `${ ref.path }#${ change.to }` );
-
-		if ( updated !== page.lines[ ref.line ] ) {
-			page.lines[ ref.line ] = updated;
-			anchorsFixed++;
-		}
+	for ( const page of rewritten.values() ) {
+		page.lines = page.lines.map( ( line ) => restoreAnchors( line, true ) );
 	}
 
 	const contents = new Map();
@@ -1117,14 +1275,16 @@ function migrate() {
 		contents.set( newFile, `${ front.join( '\n' ) }\n\n${ lines.join( '\n' ).replace( /\n*$/, '\n' ) }` );
 	}
 
-	const tracked        = trackedFiles();
+	const recoverable    = recoverableFiles();
 	const removed        = [ ...droppedWinner.keys(), ...leftovers ];
-	const preserved      = removed.filter( ( file ) => ! tracked.has( file ) && '.DS_Store' !== posix.basename( file ) );
+	const preserved      = removed.filter( ( file ) => ! recoverable.has( file ) && '.DS_Store' !== posix.basename( file ) );
 	const preservedPaths = new Map( preserved.map( ( file ) => [ file, `removed-docs/${ file }` ] ) );
 
 	for ( const [ file, path ] of preservedPaths ) {
-		if ( existsSync( join( repoRoot, '.planning', path ) ) ) {
-			fatal.push( `${ file } isn't tracked by git, and .planning/${ path } already exists, so there's nowhere safe to keep it. Move one of them first.` );
+		const problem = planningProblem( planningRoot, path );
+
+		if ( problem ) {
+			fatal.push( `${ file } can't be restored from git (untracked or edited), and .planning/${ path } ${ 'symlink' === problem ? 'goes through a symbolic link' : 'is taken' }, so there's nowhere safe to keep it. Move one of them first.` );
 		}
 	}
 
@@ -1177,37 +1337,56 @@ function migrate() {
 		process.exit( 1 );
 	}
 
-	const staging = join( repoRoot, '.docs-migrate-staging' );
-	const backup  = join( repoRoot, '.docs-migrate-backup' );
-
-	if ( existsSync( staging ) || existsSync( backup ) ) {
-		fail( `${ staging } or ${ backup } already exists, so an earlier run was interrupted. Check them for files you need (the backup holds the original docs/), remove them, then run again.` );
+	if ( existsSync( backup ) ) {
+		fail( `${ backup } already exists, so an earlier run was interrupted. It holds the original docs/: check it for files you need, remove it, then run again.` );
 	}
 
-	mkdirSync( join( staging, 'docs' ), { recursive: true } );
+	try {
+		mkdirSync( staging );
+	} catch ( error ) {
+		fail( 'EEXIST' === error.code ? `${ staging } already exists: another run is in progress or an earlier one was interrupted. Check it for files you need, remove it, then run again.` : error.message );
+	}
 
-	for ( const [ from, move ] of moves ) {
-		const destination = move.planning ? join( staging, 'planning', move.path ) : join( staging, 'docs', move.path );
+	const writeStaged = ( destination, write ) => {
 		mkdirSync( dirname( destination ), { recursive: true } );
+		write( destination );
+	};
 
-		if ( contents.has( move.path ) && ! move.planning && from.toLowerCase().endsWith( '.md' ) && rewritten.get( move.path )?.oldFile === from ) {
-			writeFileSync( destination, contents.get( move.path ) );
-		} else {
-			copyFileSync( join( docsPath, from ), destination );
+	try {
+		mkdirSync( join( staging, 'docs' ) );
+
+		for ( const [ from, move ] of moves ) {
+			const destination = move.planning ? join( staging, 'planning', move.path ) : join( staging, 'docs', move.path );
+
+			if ( contents.has( move.path ) && ! move.planning && from.toLowerCase().endsWith( '.md' ) && rewritten.get( move.path )?.oldFile === from ) {
+				writeStaged( destination, ( path ) => writeFileSync( path, contents.get( move.path ), { flag: 'wx' } ) );
+			} else {
+				writeStaged( destination, ( path ) => copyFileSync( join( docsPath, from ), path, constants.COPYFILE_EXCL ) );
+			}
 		}
+
+		for ( const [ file, path ] of preservedPaths ) {
+			writeStaged( join( staging, 'planning', path ), ( destination ) => copyFileSync( join( docsPath, file ), destination, constants.COPYFILE_EXCL ) );
+		}
+
+		if ( hasDocsIgnore || 0 < docsIgnoreAdditions.length ) {
+			const original  = hasDocsIgnore ? readFileSync( join( docsPath, '.docsignore' ), 'utf8' ) : '';
+			const base      = original ? `${ original.replace( /\n*$/, '\n' ) }\n` : '';
+			const additions = 0 < docsIgnoreAdditions.length ? `${ base }# Renamed by docs-migrate\n${ docsIgnoreAdditions.join( '\n' ) }\n` : original;
+
+			writeStaged( join( staging, 'docs', '.docsignore' ), ( path ) => writeFileSync( path, additions, { flag: 'wx' } ) );
+		}
+	} catch ( error ) {
+		rmSync( staging, { recursive: true, force: true } );
+		fail( `Stopped before changing anything: ${ 'EEXIST' === error.code ? `two files would be written to ${ relative( staging, error.dest ?? error.path ?? '' ) }. Rename one of them first.` : error.message }` );
 	}
 
-	for ( const [ file, path ] of preservedPaths ) {
-		const destination = join( staging, 'planning', path );
-		mkdirSync( dirname( destination ), { recursive: true } );
-		copyFileSync( join( docsPath, file ), destination );
-	}
+	const planningFiles = existsSync( join( staging, 'planning' ) ) ? listFilesUnder( join( staging, 'planning' ) ) : [];
+	const blocked       = planningFiles.filter( ( file ) => planningProblem( planningRoot, file ) );
 
-	if ( hasDocsIgnore ) {
-		const original  = readFileSync( join( docsPath, '.docsignore' ), 'utf8' );
-		const additions = 0 < docsIgnoreAdditions.length ? `${ original.replace( /\n*$/, '\n' ) }\n# Renamed by docs-migrate\n${ docsIgnoreAdditions.join( '\n' ) }\n` : original;
-
-		writeFileSync( join( staging, 'docs', '.docsignore' ), additions );
+	if ( blocked.length ) {
+		rmSync( staging, { recursive: true, force: true } );
+		fail( `Stopped before changing anything: ${ blocked.map( ( file ) => `.planning/${ file }` ).join( ', ' ) } can't be written (taken, blocked by a file, or behind a symbolic link).` );
 	}
 
 	renameSync( docsPath, backup );
@@ -1219,27 +1398,27 @@ function migrate() {
 		throw error;
 	}
 
-	const stuck = [];
+	const moved = [];
 
-	if ( existsSync( join( staging, 'planning' ) ) ) {
-		const planningRoot = join( repoRoot, '.planning' );
-
-		for ( const file of listFilesUnder( join( staging, 'planning' ) ) ) {
+	try {
+		for ( const file of planningFiles ) {
 			const destination = join( planningRoot, file );
 
-			if ( existsSync( destination ) ) {
-				stuck.push( file );
-
-				continue;
+			if ( planningProblem( planningRoot, file ) ) {
+				throw new Error( `.planning/${ file } changed while the script was running.` );
 			}
 
 			mkdirSync( dirname( destination ), { recursive: true } );
 			renameSync( join( staging, 'planning', file ), destination );
+			moved.push( file );
 		}
-	}
+	} catch ( error ) {
+		const remaining = planningFiles.filter( ( file ) => ! moved.includes( file ) );
 
-	if ( stuck.length ) {
-		console.log( `\nCouldn't move ${ stuck.join( ', ' ) } into .planning/ because the path is taken. They're still in ${ staging }/planning, and the original docs/ is in ${ backup }.` );
+		console.log( `\nInstalled the new docs/, but moving files into .planning/ failed: ${ error.message }` );
+		console.log( `  Moved: ${ moved.join( ', ' ) || 'none' }` );
+		console.log( `  Still in ${ join( staging, 'planning' ) }: ${ remaining.join( ', ' ) }` );
+		console.log( `  The original docs/ is in ${ backup }. Move the remaining files by hand, then delete both folders.` );
 		process.exit( 1 );
 	}
 
