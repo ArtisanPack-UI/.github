@@ -1,0 +1,9 @@
+{
+  "name": "Docs lint",
+  "description": "Checks the docs/ folder against the ArtisanPack UI documentation standard (structure, naming, front matter and links).",
+  "iconName": "octicon book",
+  "categories": [
+    "Markdown",
+    "Documentation"
+  ]
+}
