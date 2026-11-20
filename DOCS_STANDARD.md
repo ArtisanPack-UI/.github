@@ -19,7 +19,7 @@ docs/
 ├── advanced.md             menu_order: 80    optional
 ├── advanced/
 ├── reference.md            menu_order: 85    required
-├── reference/                                configuration.md, hooks.md, events.md, commands.md, models.md, rest-api.md, …
+├── reference/                                configuration.md, hooks.md, functions.md, events.md, commands.md, models.md, rest-api.md, …
 ├── upgrading.md            menu_order: 90    required from the second major version onward
 ├── faq.md                  menu_order: 95    required
 ├── troubleshooting.md      menu_order: 99    required
@@ -36,7 +36,7 @@ docs/
 | `usage.md` | 30 | Task-oriented guides for everyday use. |
 | *package-specific sections* | 40–79 | Topics big enough for their own section, such as `components`, `frontend`, `integrations` or `ai`. |
 | `advanced.md` | 80 | Extending, customizing, performance, testing your app with the package. |
-| `reference.md` | 85 | Lookup material: configuration keys, hooks, events, Artisan commands, models, services, REST endpoints, TypeScript types. |
+| `reference.md` | 85 | Lookup material: configuration keys, hooks, helper functions, public classes and services, events, Artisan commands, models, REST endpoints, TypeScript types. It must be complete. See [Complete references](#complete-references). |
 | `upgrading.md` | 90 | What changed between major versions and how to move across. |
 | `faq.md` | 95 | Short answers to common questions. |
 | `troubleshooting.md` | 99 | Symptoms, causes and fixes. |
@@ -198,6 +198,20 @@ $media = apUploadMedia( $request->file( 'image' ), [
 **Fix:** Run `php artisan storage:link`.
 ```
 
+## Complete references
+
+A developer should never have to read a package's source to find out what it lets them hook into or call. The reference has to list **all** of the following that the package has, not a selection:
+
+- **Every hook it fires.** Each filter (`applyFilters()`) and action (`doAction()`), in PHP, Blade and JavaScript, goes in `reference/hooks.md`, or in a `## Hooks` section of `reference.md` for a small package. Give each one its name, whether it's a filter or an action, its arguments with types, what a filter must return, when it runs and **Since:**. Document names built at runtime with a placeholder, such as `ap.forms.table.{screen}.columns`, and list the values the placeholder can take.
+- **Hooks from other packages that it applies or subscribes to,** when that changes what a developer sees. List them in their own table with the package that owns each one.
+- **Every helper function it exposes.** Each global function (the files in Composer's `autoload.files`) and each exported JavaScript function goes in `reference/functions.md`, or in a `## Functions` section of `reference.md` for a small package with no other reference subpages, using the [reference entry](#reference-entry) template. Keep autoloaded helper files in `src/` so the docs-lint workflow runs when they change. For example, the accessibility package's `a11yCheckContrastColor()` and `generateAccessibleTextColor()`.
+- **The public PHP API meant for apps to use.** Facades, registries, services, contracts and base classes to implement or extend, traits for app components, and the public constants (event names, hook-name constants) that go with them. Put them in `reference/php-api.md` or one page per area. List every public method on each, not just the common ones. Usage and extending guides show how to use them, and the reference lists the whole surface and links back to those guides.
+- **Browser and Livewire events, Blade components and Artisan commands** that the package dispatches, registers or ships, each with its payload, props or options.
+
+Mark anything public that apps shouldn't use with `@internal` in the source and leave it out of the docs. Anything without that tag counts as public.
+
+When a change adds, renames or removes any of these, update the reference in the same pull request.
+
 ## Versions and upgrades
 
 - **The docs describe the current major version.** Note features added in a minor release with **Since:** on reference entries or a short note in guides.
@@ -217,7 +231,7 @@ $media = apUploadMedia( $request->file( 'image' ), [
 
 ## Enforcement
 
-The docs-lint workflow checks every pull request that touches `docs/`. It reports:
+The docs-lint workflow checks every pull request that touches `docs/`, `src/`, `resources/` or `composer.json`. It reports:
 
 - file and folder names that aren't kebab-case
 - missing required pages for the archetype
@@ -228,6 +242,7 @@ The docs-lint workflow checks every pull request that touches `docs/`. It report
 - pages with no H1, more than one H1, or an H1 that doesn't match `title`
 - wiki-style links, links without `.md`, and relative links to files that don't exist
 - GitHub alert syntax and code blocks with no language
+- hooks the package fires (from `src/` and `resources/`) and public helper functions in Composer's `autoload.files` that no docs page mentions, and autoloaded helper files outside `src/` (warnings for now). It skips comments, test files and anything tagged `@internal`. It can only check hook names written as a plain string or as a class constant, so names built at runtime still need checking by hand.
 
 ### Adding it to a package
 
@@ -250,7 +265,7 @@ curl -sO https://raw.githubusercontent.com/ArtisanPack-UI/.github/main/scripts/d
 node docs-lint.mjs docs --archetype=package
 ```
 
-It needs Node 18 or newer and has no dependencies.
+It needs Node 18 or newer and has no dependencies. Its own regression tests live in `scripts/docs-lint.test.mjs`. Run them with `node --test scripts/docs-lint.test.mjs`.
 
 ## Migrating a package
 
