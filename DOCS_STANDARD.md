@@ -204,7 +204,7 @@ A developer should never have to read a package's source to find out what it let
 
 - **Every hook it fires.** Each filter (`applyFilters()`) and action (`doAction()`), in PHP, Blade and JavaScript, goes in `reference/hooks.md`, or in a `## Hooks` section of `reference.md` for a small package. Give each one its name, whether it's a filter or an action, its arguments with types, what a filter must return, when it runs and **Since:**. Document names built at runtime with a placeholder, such as `ap.forms.table.{screen}.columns`, and list the values the placeholder can take.
 - **Hooks from other packages that it applies or subscribes to,** when that changes what a developer sees. List them in their own table with the package that owns each one.
-- **Every helper function it exposes.** Each global function (the files in Composer's `autoload.files`) and each exported JavaScript function goes in `reference/functions.md`, using the [reference entry](#reference-entry) template. For example, the accessibility package's `a11yCheckContrastColor()` and `generateAccessibleTextColor()`.
+- **Every helper function it exposes.** Each global function (the files in Composer's `autoload.files`) and each exported JavaScript function goes in `reference/functions.md`, or in a `## Functions` section of `reference.md` for a small package with no other reference subpages, using the [reference entry](#reference-entry) template. Keep autoloaded helper files in `src/` so the docs-lint workflow runs when they change. For example, the accessibility package's `a11yCheckContrastColor()` and `generateAccessibleTextColor()`.
 - **The public PHP API meant for apps to use.** Facades, registries, services, contracts and base classes to implement or extend, traits for app components, and the public constants (event names, hook-name constants) that go with them. Put them in `reference/php-api.md` or one page per area. List every public method on each, not just the common ones. Usage and extending guides show how to use them, and the reference lists the whole surface and links back to those guides.
 - **Browser and Livewire events, Blade components and Artisan commands** that the package dispatches, registers or ships, each with its payload, props or options.
 
@@ -242,7 +242,7 @@ The docs-lint workflow checks every pull request that touches `docs/`, `src/`, `
 - pages with no H1, more than one H1, or an H1 that doesn't match `title`
 - wiki-style links, links without `.md`, and relative links to files that don't exist
 - GitHub alert syntax and code blocks with no language
-- hooks the package fires (from `src/` and `resources/`) and helper functions in Composer's `autoload.files` that no docs page mentions (warnings for now). It can only check hook names written as a string or as a class constant, so names built at runtime still need checking by hand.
+- hooks the package fires (from `src/` and `resources/`) and public helper functions in Composer's `autoload.files` that no docs page mentions, and autoloaded helper files outside `src/` (warnings for now). It skips comments, test files and anything tagged `@internal`. It can only check hook names written as a plain string or as a class constant, so names built at runtime still need checking by hand.
 
 ### Adding it to a package
 
@@ -265,7 +265,7 @@ curl -sO https://raw.githubusercontent.com/ArtisanPack-UI/.github/main/scripts/d
 node docs-lint.mjs docs --archetype=package
 ```
 
-It needs Node 18 or newer and has no dependencies.
+It needs Node 18 or newer and has no dependencies. Its own regression tests live in `scripts/docs-lint.test.mjs`. Run them with `node --test scripts/docs-lint.test.mjs`.
 
 ## Migrating a package
 

@@ -556,17 +556,21 @@ const SOURCE_EXTENSIONS = new Set( [ '.php', '.js', '.mjs', '.cjs', '.jsx', '.ts
 
 /**
  * A hook call whose first argument is a whole string literal. Names built by
- * concatenation (`'ap.table.' . $screen`) don't match, because they can't be
- * checked; the standard asks for those to be documented with placeholders.
+ * concatenation (`'ap.table.' . $screen`) or interpolation (`"ap.$screen.saved"`)
+ * aren't checked; the standard asks for those to be documented with placeholders.
  */
 const LITERAL_HOOK_CALL = /(?:\bapplyFilters|\bdoAction|\bFilter::apply|\bAction::do|@filter|@action)\s*\(\s*(['"])([^'"\n]+)\1\s*[,)]/g;
 
 /**
  * A hook call whose first argument is a class constant (`self::FILTER`, `AdminSpotlight::COMMANDS_FILTER`).
  */
-const CONSTANT_HOOK_CALL = /(?:\bapplyFilters|\bdoAction|\bFilter::apply|\bAction::do)\s*\(\s*(self|static|[A-Z]\w*)::([A-Z][A-Z0-9_]*)\s*[,)]/g;
+const CONSTANT_HOOK_CALL = /(?:\bapplyFilters|\bdoAction|\bFilter::apply|\bAction::do)\s*\(\s*(self|static|\\?[A-Z][\w\\]*)::([A-Z][A-Z0-9_]*)\s*[,)]/g;
 
 const STRING_CONSTANT = /\bconst\s+([A-Z][A-Z0-9_]*)\s*=\s*(['"])([^'"\n]+)\2\s*;/g;
+
+const CLASS_DECLARATION = /(?<![:$\w])(?:class|interface|trait|enum)\s+([A-Za-z_]\w*)/g;
+
+const NOT_CLASS_NAMES = new Set( [ 'extends', 'implements' ] );
 
 /**
  * Line number of a character offset.
@@ -580,17 +584,164 @@ function lineAt( content, offset ) {
 }
 
 /**
- * Whether a character offset sits on a comment line (`//`, `#`, `*` or `/*`),
- * so examples in docblocks aren't mistaken for real hook calls.
+ * Escape a string for use inside a regular expression.
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+function escapeRegExp( value ) {
+	return value.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
+}
+
+/**
+ * Blank out comments while keeping every offset and line break, so examples
+ * in comments aren't mistaken for hook calls and warnings keep their lines.
+ *
+ * Templates (Blade, Vue) only lose their template comments: their plain text
+ * is full of apostrophes that would read as unterminated strings.
  *
  * @param {string} content
- * @param {number} offset
- * @returns {boolean}
+ * @param {string} file
+ * @returns {string}
  */
-function onCommentLine( content, offset ) {
-	const start = content.lastIndexOf( '\n', offset - 1 ) + 1;
+function maskComments( content, file ) {
+	const isTemplate = file.endsWith( '.blade.php' ) || file.endsWith( '.vue' );
+	const isPhp      = file.endsWith( '.php' );
+	const masked     = content.split( '' );
 
-	return /^\s*(?:\/\/|#|\*|\/\*|\{\{--)/.test( content.slice( start, offset ) );
+	const blank = ( from, to ) => {
+		for ( let index = from; index < to; index++ ) {
+			if ( '\n' !== masked[ index ] ) {
+				masked[ index ] = ' ';
+			}
+		}
+	};
+
+	const blankUntil = ( from, opening, closing ) => {
+		const close = content.indexOf( closing, from + opening.length );
+		const end   = -1 === close ? content.length : close + closing.length;
+
+		blank( from, end );
+
+		return end;
+	};
+
+	let index = 0;
+
+	while ( index < content.length ) {
+		if ( content.startsWith( '{{--', index ) ) {
+			index = blankUntil( index, '{{--', '--}}' );
+			continue;
+		}
+
+		if ( content.startsWith( '<!--', index ) ) {
+			index = blankUntil( index, '<!--', '-->' );
+			continue;
+		}
+
+		if ( isTemplate ) {
+			index++;
+			continue;
+		}
+
+		const char = content[ index ];
+		const next = content[ index + 1 ];
+
+		if ( '\'' === char || '"' === char || '`' === char ) {
+			let end = index + 1;
+
+			while ( end < content.length && char !== content[ end ] ) {
+				end += '\\' === content[ end ] ? 2 : 1;
+			}
+
+			index = end + 1;
+			continue;
+		}
+
+		if ( '/' === char && '*' === next ) {
+			index = blankUntil( index, '/*', '*/' );
+			continue;
+		}
+
+		if ( ( '/' === char && '/' === next ) || ( isPhp && '#' === char && '[' !== next ) ) {
+			const newline = content.indexOf( '\n', index );
+			const end     = -1 === newline ? content.length : newline;
+
+			blank( index, end );
+			index = end;
+			continue;
+		}
+
+		index++;
+	}
+
+	return masked.join( '' );
+}
+
+/**
+ * Class-level context of a PHP file: its namespace, imports and the classes
+ * it declares, so constants resolve against the right class.
+ *
+ * @param {string} content Comment-masked source.
+ * @returns {{ namespace: string, imports: Map<string, string>, classes: { name: string, offset: number }[] }}
+ */
+function phpContext( content ) {
+	const namespace = content.match( /^\s*namespace\s+([\w\\]+)\s*;/m )?.[1] ?? '';
+	const imports   = new Map();
+
+	for ( const match of content.matchAll( /^\s*use\s+\\?([\w\\]+)(?:\s+as\s+(\w+))?\s*;/gm ) ) {
+		imports.set( match[2] ?? match[1].split( '\\' ).pop(), match[1] );
+	}
+
+	const classes = [];
+
+	for ( const match of content.matchAll( CLASS_DECLARATION ) ) {
+		if ( ! NOT_CLASS_NAMES.has( match[1] ) ) {
+			classes.push( { name: namespace ? `${ namespace }\\${ match[1] }` : match[1], offset: match.index } );
+		}
+	}
+
+	return { namespace, imports, classes };
+}
+
+/**
+ * Fully qualified name of the class declared closest before an offset.
+ *
+ * @param {{ classes: { name: string, offset: number }[] }} context
+ * @param {number} offset
+ * @returns {string|null}
+ */
+function enclosingClass( context, offset ) {
+	let owner = null;
+
+	for ( const declared of context.classes ) {
+		if ( declared.offset < offset ) {
+			owner = declared.name;
+		}
+	}
+
+	return owner;
+}
+
+/**
+ * Fully qualified name of a class reference, using the file's imports and namespace.
+ *
+ * @param {string} reference
+ * @param {{ namespace: string, imports: Map<string, string> }} context
+ * @returns {string}
+ */
+function resolveClass( reference, context ) {
+	if ( reference.startsWith( '\\' ) ) {
+		return reference.slice( 1 );
+	}
+
+	const [ first, ...rest ] = reference.split( '\\' );
+
+	if ( context.imports.has( first ) ) {
+		return [ context.imports.get( first ), ...rest ].join( '\\' );
+	}
+
+	return context.namespace ? `${ context.namespace }\\${ reference }` : reference;
 }
 
 /**
@@ -629,16 +780,36 @@ function sourceFiles( repoRoot ) {
 }
 
 /**
- * Global functions declared in the files Composer autoloads (`autoload.files`).
+ * Whether the docblock right before an offset is tagged `@internal`.
+ *
+ * @param {string} content
+ * @param {number} offset
+ * @returns {boolean}
+ */
+function isInternal( content, offset ) {
+	const before = content.slice( 0, offset ).trimEnd();
+
+	if ( ! before.endsWith( '*/' ) ) {
+		return false;
+	}
+
+	const start = before.lastIndexOf( '/**' );
+
+	return -1 !== start && /@internal\b/.test( before.slice( start ) );
+}
+
+/**
+ * Global functions declared in the files Composer autoloads (`autoload.files`),
+ * leaving out any tagged `@internal`.
  *
  * @param {string} repoRoot
- * @returns {{ name: string, file: string, line: number }[]}
+ * @returns {{ files: string[], functions: { name: string, file: string, line: number }[] }}
  */
 function helperFunctions( repoRoot ) {
 	const composerPath = join( repoRoot, 'composer.json' );
 
 	if ( ! existsSync( composerPath ) ) {
-		return [];
+		return { files: [], functions: [] };
 	}
 
 	let composer;
@@ -646,9 +817,10 @@ function helperFunctions( repoRoot ) {
 	try {
 		composer = JSON.parse( readFileSync( composerPath, 'utf8' ) );
 	} catch {
-		return [];
+		return { files: [], functions: [] };
 	}
 
+	const files     = [];
 	const functions = [];
 
 	for ( const relativePath of composer?.autoload?.files ?? [] ) {
@@ -658,14 +830,18 @@ function helperFunctions( repoRoot ) {
 			continue;
 		}
 
+		files.push( file );
+
 		const content = readFileSync( file, 'utf8' );
 
 		for ( const match of content.matchAll( /^[ \t]*function\s+([A-Za-z_]\w*)\s*\(/gm ) ) {
-			functions.push( { name: match[1], file, line: lineAt( content, match.index ) } );
+			if ( ! isInternal( content, match.index ) ) {
+				functions.push( { name: match[1], file, line: lineAt( content, match.index ) } );
+			}
 		}
 	}
 
-	return functions;
+	return { files, functions };
 }
 
 /**
@@ -678,16 +854,25 @@ function helperFunctions( repoRoot ) {
 function lintApiCoverage( pages ) {
 	const repoRoot = dirname( docsPath );
 	const docsText = [ ...pages.keys() ].map( ( path ) => readFileSync( path, 'utf8' ) ).join( '\n' );
-	const files    = sourceFiles( repoRoot );
-	const contents = new Map( files.map( ( file ) => [ file, readFileSync( file, 'utf8' ) ] ) );
+	const sources  = sourceFiles( repoRoot ).map( ( file ) => {
+		const content = maskComments( readFileSync( file, 'utf8' ), file );
+
+		return { file, content, context: file.endsWith( '.php' ) ? phpContext( content ) : null };
+	} );
 
 	const constants = new Map();
 
-	for ( const [ file, content ] of contents ) {
-		const owner = basename( file, extname( file ) );
+	for ( const { content, context } of sources ) {
+		if ( null === context ) {
+			continue;
+		}
 
 		for ( const match of content.matchAll( STRING_CONSTANT ) ) {
-			constants.set( `${ owner }::${ match[1] }`, match[3] );
+			const owner = enclosingClass( context, match.index );
+
+			if ( null !== owner ) {
+				constants.set( `${ owner }::${ match[1] }`, match[3] );
+			}
 		}
 	}
 
@@ -699,21 +884,23 @@ function lintApiCoverage( pages ) {
 		}
 	};
 
-	for ( const [ file, content ] of contents ) {
+	for ( const { file, content, context } of sources ) {
 		for ( const match of content.matchAll( LITERAL_HOOK_CALL ) ) {
-			if ( onCommentLine( content, match.index ) ) {
+			if ( '"' === match[1] && /[$`{]/.test( match[2] ) ) {
 				continue;
 			}
 
 			remember( match[2], file, lineAt( content, match.index ) );
 		}
 
-		for ( const match of content.matchAll( CONSTANT_HOOK_CALL ) ) {
-			if ( onCommentLine( content, match.index ) ) {
-				continue;
-			}
+		if ( null === context ) {
+			continue;
+		}
 
-			const owner = 'self' === match[1] || 'static' === match[1] ? basename( file, extname( file ) ) : match[1];
+		for ( const match of content.matchAll( CONSTANT_HOOK_CALL ) ) {
+			const owner = 'self' === match[1] || 'static' === match[1]
+				? enclosingClass( context, match.index )
+				: resolveClass( match[1], context );
 			const name  = constants.get( `${ owner }::${ match[2] }` );
 
 			if ( undefined !== name ) {
@@ -723,14 +910,22 @@ function lintApiCoverage( pages ) {
 	}
 
 	for ( const [ name, { file, line } ] of hooks ) {
-		if ( ! docsText.includes( name ) ) {
+		if ( ! new RegExp( `(?<![\\w.:/-])${ escapeRegExp( name ) }(?![\\w:/-]|\\.[\\w{])` ).test( docsText ) ) {
 			report( 'warning', file, `Hook "${ name }" isn't documented. Add it to the hooks reference (reference/hooks.md).`, line );
 		}
 	}
 
-	for ( const { name, file, line } of helperFunctions( repoRoot ) ) {
+	const helpers = helperFunctions( repoRoot );
+
+	for ( const file of helpers.files ) {
+		if ( ! SOURCE_DIRECTORIES.some( ( directory ) => file.startsWith( join( repoRoot, directory ) + sep ) ) ) {
+			report( 'warning', file, `Autoloaded helper files belong in ${ SOURCE_DIRECTORIES[0] }/, so the docs-lint workflow runs when they change.` );
+		}
+	}
+
+	for ( const { name, file, line } of helpers.functions ) {
 		if ( ! new RegExp( `\\b${ name }\\b` ).test( docsText ) ) {
-			report( 'warning', file, `Helper function ${ name }() isn't documented. Add it to the functions reference (reference/functions.md).`, line );
+			report( 'warning', file, `Helper function ${ name }() isn't documented. Add it to the functions reference (reference/functions.md, or a Functions section of reference.md).`, line );
 		}
 	}
 }
