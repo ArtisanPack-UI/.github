@@ -538,11 +538,206 @@ function lint() {
 			siblings.set( key, path );
 		}
 	}
+
+	lintApiCoverage( pages );
+}
+
+/**
+ * Folders under the repo root that hold a package's own source.
+ */
+const SOURCE_DIRECTORIES = [ 'src', 'resources' ];
+
+/**
+ * Folders never scanned for source, wherever they appear.
+ */
+const SKIPPED_SOURCE_DIRECTORIES = new Set( [ 'vendor', 'node_modules', 'tests', '__tests__', 'dist', 'build', '.git' ] );
+
+const SOURCE_EXTENSIONS = new Set( [ '.php', '.js', '.mjs', '.cjs', '.jsx', '.ts', '.tsx', '.vue' ] );
+
+/**
+ * A hook call whose first argument is a whole string literal. Names built by
+ * concatenation (`'ap.table.' . $screen`) don't match, because they can't be
+ * checked; the standard asks for those to be documented with placeholders.
+ */
+const LITERAL_HOOK_CALL = /(?:\bapplyFilters|\bdoAction|\bFilter::apply|\bAction::do|@filter|@action)\s*\(\s*(['"])([^'"\n]+)\1\s*[,)]/g;
+
+/**
+ * A hook call whose first argument is a class constant (`self::FILTER`, `AdminSpotlight::COMMANDS_FILTER`).
+ */
+const CONSTANT_HOOK_CALL = /(?:\bapplyFilters|\bdoAction|\bFilter::apply|\bAction::do)\s*\(\s*(self|static|[A-Z]\w*)::([A-Z][A-Z0-9_]*)\s*[,)]/g;
+
+const STRING_CONSTANT = /\bconst\s+([A-Z][A-Z0-9_]*)\s*=\s*(['"])([^'"\n]+)\2\s*;/g;
+
+/**
+ * Line number of a character offset.
+ *
+ * @param {string} content
+ * @param {number} offset
+ * @returns {number}
+ */
+function lineAt( content, offset ) {
+	return content.slice( 0, offset ).split( '\n' ).length;
+}
+
+/**
+ * Whether a character offset sits on a comment line (`//`, `#`, `*` or `/*`),
+ * so examples in docblocks aren't mistaken for real hook calls.
+ *
+ * @param {string} content
+ * @param {number} offset
+ * @returns {boolean}
+ */
+function onCommentLine( content, offset ) {
+	const start = content.lastIndexOf( '\n', offset - 1 ) + 1;
+
+	return /^\s*(?:\/\/|#|\*|\/\*|\{\{--)/.test( content.slice( start, offset ) );
+}
+
+/**
+ * Every source file under the package's source folders.
+ *
+ * @param {string} repoRoot
+ * @returns {string[]}
+ */
+function sourceFiles( repoRoot ) {
+	const files = [];
+
+	const visit = ( directory ) => {
+		for ( const name of readdirSync( directory ).sort() ) {
+			const path = join( directory, name );
+			const info = statSync( path );
+
+			if ( info.isDirectory() ) {
+				if ( ! SKIPPED_SOURCE_DIRECTORIES.has( name ) ) {
+					visit( path );
+				}
+			} else if ( SOURCE_EXTENSIONS.has( extname( name ) ) && ! name.endsWith( '.d.ts' ) && ! /\.(?:test|spec)\.[^.]+$/.test( name ) && ! /(?:Test|Tests)\.php$/.test( name ) ) {
+				files.push( path );
+			}
+		}
+	};
+
+	for ( const directory of SOURCE_DIRECTORIES ) {
+		const path = join( repoRoot, directory );
+
+		if ( existsSync( path ) && statSync( path ).isDirectory() ) {
+			visit( path );
+		}
+	}
+
+	return files;
+}
+
+/**
+ * Global functions declared in the files Composer autoloads (`autoload.files`).
+ *
+ * @param {string} repoRoot
+ * @returns {{ name: string, file: string, line: number }[]}
+ */
+function helperFunctions( repoRoot ) {
+	const composerPath = join( repoRoot, 'composer.json' );
+
+	if ( ! existsSync( composerPath ) ) {
+		return [];
+	}
+
+	let composer;
+
+	try {
+		composer = JSON.parse( readFileSync( composerPath, 'utf8' ) );
+	} catch {
+		return [];
+	}
+
+	const functions = [];
+
+	for ( const relativePath of composer?.autoload?.files ?? [] ) {
+		const file = join( repoRoot, relativePath );
+
+		if ( ! existsSync( file ) ) {
+			continue;
+		}
+
+		const content = readFileSync( file, 'utf8' );
+
+		for ( const match of content.matchAll( /^[ \t]*function\s+([A-Za-z_]\w*)\s*\(/gm ) ) {
+			functions.push( { name: match[1], file, line: lineAt( content, match.index ) } );
+		}
+	}
+
+	return functions;
+}
+
+/**
+ * Warn about hooks the package fires and helper functions it exposes that no
+ * docs page mentions. Only literal hook names and constants that resolve to
+ * one can be checked.
+ *
+ * @param {Map<string, object>} pages
+ */
+function lintApiCoverage( pages ) {
+	const repoRoot = dirname( docsPath );
+	const docsText = [ ...pages.keys() ].map( ( path ) => readFileSync( path, 'utf8' ) ).join( '\n' );
+	const files    = sourceFiles( repoRoot );
+	const contents = new Map( files.map( ( file ) => [ file, readFileSync( file, 'utf8' ) ] ) );
+
+	const constants = new Map();
+
+	for ( const [ file, content ] of contents ) {
+		const owner = basename( file, extname( file ) );
+
+		for ( const match of content.matchAll( STRING_CONSTANT ) ) {
+			constants.set( `${ owner }::${ match[1] }`, match[3] );
+		}
+	}
+
+	const hooks = new Map();
+
+	const remember = ( name, file, line ) => {
+		if ( ! hooks.has( name ) ) {
+			hooks.set( name, { file, line } );
+		}
+	};
+
+	for ( const [ file, content ] of contents ) {
+		for ( const match of content.matchAll( LITERAL_HOOK_CALL ) ) {
+			if ( onCommentLine( content, match.index ) ) {
+				continue;
+			}
+
+			remember( match[2], file, lineAt( content, match.index ) );
+		}
+
+		for ( const match of content.matchAll( CONSTANT_HOOK_CALL ) ) {
+			if ( onCommentLine( content, match.index ) ) {
+				continue;
+			}
+
+			const owner = 'self' === match[1] || 'static' === match[1] ? basename( file, extname( file ) ) : match[1];
+			const name  = constants.get( `${ owner }::${ match[2] }` );
+
+			if ( undefined !== name ) {
+				remember( name, file, lineAt( content, match.index ) );
+			}
+		}
+	}
+
+	for ( const [ name, { file, line } ] of hooks ) {
+		if ( ! docsText.includes( name ) ) {
+			report( 'warning', file, `Hook "${ name }" isn't documented. Add it to the hooks reference (reference/hooks.md).`, line );
+		}
+	}
+
+	for ( const { name, file, line } of helperFunctions( repoRoot ) ) {
+		if ( ! new RegExp( `\\b${ name }\\b` ).test( docsText ) ) {
+			report( 'warning', file, `Helper function ${ name }() isn't documented. Add it to the functions reference (reference/functions.md).`, line );
+		}
+	}
 }
 
 lint();
 
-const errors   = problems.filter( ( problem ) => 'error' === problem.level );
+const errors  = problems.filter( ( problem ) => 'error' === problem.level );
 const warnings = problems.filter( ( problem ) => 'warning' === problem.level );
 
 for ( const problem of problems ) {

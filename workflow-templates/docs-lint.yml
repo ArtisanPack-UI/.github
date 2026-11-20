@@ -10,11 +10,17 @@ on:
   pull_request:
     paths:
       - 'docs/**'
+      - 'src/**'
+      - 'resources/**'
+      - 'composer.json'
       - '.github/workflows/docs-lint.yml'
   push:
     branches: [$default-branch]
     paths:
       - 'docs/**'
+      - 'src/**'
+      - 'resources/**'
+      - 'composer.json'
   workflow_dispatch:
 
 jobs:
